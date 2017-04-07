@@ -129,11 +129,8 @@ public struct AKMIDIEvent {
                          byte2: packet.data.2)
             }
         } else {
-
-            guard let existingLength = length else {
-                return
-            }
             if packet.isSysex {
+                guard let existingLength = length else { return }
                 internalData = [] //reset internalData
                 length = MIDIByte(0)
                 //voodoo
