@@ -21,11 +21,21 @@
     return _kernel.lastTimestamp;
 }
 
+- (double)seconds {
+    return _kernel.seconds;
+}
+
 standardKernelPassthroughs()
 
 - (void)createParameters
 {
     standardSetup(JSMSequencer)
+}
+
+- (void)blahMIDI
+{
+    _kernel.createMIDIConnections(self.midiClient);
+    _kernel.ref = self.ref;
 }
 
 AUAudioUnitGeneratorOverrides(JSMSequencer)

@@ -9,6 +9,7 @@
 #pragma once
 
 #import "DSPKernel.hpp"
+#include <mach/mach_time.h>
 
 class AKJSMSequencerDSPKernel: public AKDSPKernel, public AKOutputBuffered {
 public:
@@ -18,6 +19,10 @@ public:
     
     void init(int _channels, double _sampleRate) override {
         AKDSPKernel::init(channels, sampleRate);
+    }
+    
+    void createMIDIConnections(MIDIClientRef client) {
+        MIDIOutputPortCreate(client, CFSTR("Poly"), &outputPort);
     }
     
     void start() {
@@ -46,15 +51,57 @@ public:
         }
     }
     
+    uint64_t convertTimeInNanoseconds(uint64_t time)
+    {
+        static mach_timebase_info_data_t s_timebase_info;
+        
+        if (s_timebase_info.denom == 0)
+        {
+            (void) mach_timebase_info(&s_timebase_info);
+        }
+        
+        return (uint64_t)((time * s_timebase_info.numer) / s_timebase_info.denom);
+    }
+    
     void processWithEvents(AudioTimeStamp const* timestamp,
                            AUAudioFrameCount frameCount,
                            AURenderEvent const* events)
     {
-        lastTimestamp = timestamp->mHostTime;
+        if (firstTimestamp == 0) {
+            firstTimestamp = timestamp->mHostTime;
+        }
+        
+        lastTimestamp = convertTimeInNanoseconds(timestamp->mHostTime - firstTimestamp);
+        seconds = (double)lastTimestamp * (1.0 / 1e+9);
+        
+        MIDIPacketList packetList;
+        
+        packetList.numPackets = 1;
+        
+        MIDIPacket* firstPacket = &packetList.packet[0];
+        
+        firstPacket->timeStamp = 0; // send immediately
+        
+        firstPacket->length = 3;
+        
+        firstPacket->data[0] = 0x90;
+        
+        firstPacket->data[1] = 0;
+        firstPacket->data[2] = 127;
+        
+        if (seconds >= 0.5) {
+            seconds = 0;
+            firstTimestamp = timestamp->mHostTime;
+            MIDISend(outputPort, ref, &packetList);
+        }
     }
     
 public:
     bool started = false;
     bool resetted = false;
     UInt64 lastTimestamp;
+    UInt64 firstTimestamp = 0;
+    double seconds;
+    MIDIPortRef outputPort;
+    MIDIEndpointRef ref;
 };

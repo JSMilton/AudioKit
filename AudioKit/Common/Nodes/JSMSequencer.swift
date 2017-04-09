@@ -28,6 +28,10 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
         return internalAU?.lastTimestamp ?? 0
     }
     
+    public func getSeconds() -> Double {
+        return internalAU?.seconds ?? 0
+    }
+    
     public override init() {
         
         _Self.register()
@@ -38,6 +42,13 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
             self?.avAudioNode = avAudioUnit
             self?.internalAU = avAudioUnit.auAudioUnit as? AKAudioUnitType
         }
+        
+        internalAU?.midiClient = AKMIDI().client
+    }
+    
+    public func setEndpoint(endpoint: MIDIEndpointRef) {
+        internalAU?.ref = endpoint
+        internalAU?.blahMIDI()
     }
     
 }
