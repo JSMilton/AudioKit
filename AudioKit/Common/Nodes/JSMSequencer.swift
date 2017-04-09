@@ -8,7 +8,7 @@
 
 open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     public typealias AKAudioUnitType = JSMSequencerAudioUnit
-    public static let ComponentDescription = AudioComponentDescription(generator: "seq")
+    public static let ComponentDescription = AudioComponentDescription(generator: "sequ")
     
     private var internalAU: AKAudioUnitType?
     
