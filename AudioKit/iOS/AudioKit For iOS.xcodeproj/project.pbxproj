@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4FE98A911E9A604A00F70A68 /* JSMSequencer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */; };
+		4FE98A941E9A618800F70A68 /* JSMSequencerAudioUnit.h in Headers */ = {isa = PBXBuildFile; fileRef = 4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4FE98A951E9A618800F70A68 /* JSMSequencerAudioUnit.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */; };
 		5251477B1CC4AD7E00421C52 /* AKNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251477A1CC4AD7E00421C52 /* AKNotifications.swift */; };
 		55F29C091E90654C00A2151F /* AKScheduledAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F29C081E90654C00A2151F /* AKScheduledAction.swift */; };
 		6520FFC21D361B030052410C /* resonantFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6520FFC11D361B030052410C /* resonantFilter.swift */; };
@@ -823,6 +826,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSMSequencer.swift; sourceTree = "<group>"; };
+		4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSMSequencerAudioUnit.h; sourceTree = "<group>"; };
+		4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = JSMSequencerAudioUnit.mm; sourceTree = "<group>"; };
+		4FE98A961E9A61EA00F70A68 /* AKJSMSequencerDSPKernel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AKJSMSequencerDSPKernel.hpp; sourceTree = "<group>"; };
 		5251477A1CC4AD7E00421C52 /* AKNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKNotifications.swift; sourceTree = "<group>"; };
 		55F29C081E90654C00A2151F /* AKScheduledAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKScheduledAction.swift; sourceTree = "<group>"; };
 		6520FFC11D361B030052410C /* resonantFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = resonantFilter.swift; sourceTree = "<group>"; };
@@ -1662,6 +1669,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4FE98A8F1E9A5FC500F70A68 /* Sequencer */ = {
+			isa = PBXGroup;
+			children = (
+				4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */,
+				4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */,
+				4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */,
+				4FE98A961E9A61EA00F70A68 /* AKJSMSequencerDSPKernel.hpp */,
+			);
+			name = Sequencer;
+			sourceTree = "<group>";
+		};
 		C40717301D21195000665C02 /* include */ = {
 			isa = PBXGroup;
 			children = (
@@ -2030,6 +2048,7 @@
 		C42F35421C057F4C000E937C /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
+				4FE98A8F1E9A5FC500F70A68 /* Sequencer */,
 				C46960171C0F8C3900A65FBF /* AKNode.swift */,
 				C42F35471C057F4C000E937C /* Analysis */,
 				C42F356C1C057F4C000E937C /* Effects */,
@@ -3867,6 +3886,7 @@
 				C40C42701C41B22A009D870B /* AKPluckedStringAudioUnit.h in Headers */,
 				C407181A1D211A5E00665C02 /* FileWvIn.h in Headers */,
 				C40C428D1C41C3D6009D870B /* AKDripAudioUnit.h in Headers */,
+				4FE98A941E9A618800F70A68 /* JSMSequencerAudioUnit.h in Headers */,
 				C4537FF71C3A438D00A51738 /* AKToneFilterAudioUnit.h in Headers */,
 				C45380531C3A5A4300A51738 /* AKOperationGeneratorAudioUnit.h in Headers */,
 				C40C41CF1C40E4EE009D870B /* AKTesterAudioUnit.h in Headers */,
@@ -4197,6 +4217,7 @@
 				C4537FDD1C3A438D00A51738 /* AKMoogLadder.swift in Sources */,
 				EAF9C9871C69A3E500C10CCE /* AKDevice.swift in Sources */,
 				C4F8C8F81DCA8CE4001F38F2 /* pan.c in Sources */,
+				4FE98A911E9A604A00F70A68 /* JSMSequencer.swift in Sources */,
 				C486B3361DFE2A14009A25C4 /* gen_eval.c in Sources */,
 				C4F8C8D11DCA8CE4001F38F2 /* f.c in Sources */,
 				C42859061E90B6BC009B737D /* AKZitaReverbAudioUnit.mm in Sources */,
@@ -4405,6 +4426,7 @@
 				C48C6C901D3C15F1008EA51B /* phaser.c in Sources */,
 				C48C6C661D3C15F1008EA51B /* compressor.c in Sources */,
 				C48C6CA11D3C15F1008EA51B /* revsc.c in Sources */,
+				4FE98A951E9A618800F70A68 /* JSMSequencerAudioUnit.mm in Sources */,
 				C487B5FA1DD9229900C56B59 /* AKClarinet.swift in Sources */,
 				C48C6CA31D3C15F1008EA51B /* rpt.c in Sources */,
 				C4F8C8E41DCA8CE4001F38F2 /* jcrev.c in Sources */,

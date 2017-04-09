@@ -123,3 +123,6 @@ FOUNDATION_EXPORT const unsigned char AudioKitVersionString[];
 
 // Plots
 #import "EZAudio.h"
+
+// Me
+#import "JSMSequencerAudioUnit.h"
