@@ -21,8 +21,8 @@ public:
         AKDSPKernel::init(channels, sampleRate);
     }
     
-    void createMIDIConnections(MIDIClientRef client) {
-        MIDIOutputPortCreate(client, CFSTR("Poly"), &outputPort);
+    void setMIDIClientRef(MIDIClientRef client) {
+        MIDIOutputPortCreate(client, CFSTR("Deep-808 Internal"), &outputPort);
     }
     
     void start() {
@@ -74,25 +74,28 @@ public:
         lastTimestamp = convertTimeInNanoseconds(timestamp->mHostTime - firstTimestamp);
         seconds = (double)lastTimestamp * (1.0 / 1e+9);
         
-        MIDIPacketList packetList;
-        
-        packetList.numPackets = 1;
-        
-        MIDIPacket* firstPacket = &packetList.packet[0];
-        
-        firstPacket->timeStamp = 0; // send immediately
-        
-        firstPacket->length = 3;
-        
-        firstPacket->data[0] = 0x90;
-        
-        firstPacket->data[1] = 0;
-        firstPacket->data[2] = 127;
-        
-        if (seconds >= 0.5) {
+        if (seconds >= 0.25) {
             seconds = 0;
             firstTimestamp = timestamp->mHostTime;
-            MIDISend(outputPort, ref, &packetList);
+            
+            for (int i = 0; i < 16; i++) {
+                MIDIPacketList packetList;
+                
+                packetList.numPackets = 1;
+                
+                MIDIPacket* firstPacket = &packetList.packet[0];
+                
+                firstPacket->timeStamp = 0; // send immediately
+                
+                firstPacket->length = 3;
+                
+                firstPacket->data[0] = i;
+                
+                firstPacket->data[1] = 0x90;
+                firstPacket->data[2] = 127;
+                
+                MIDISend(outputPort, ref, &packetList);
+            }
         }
     }
     

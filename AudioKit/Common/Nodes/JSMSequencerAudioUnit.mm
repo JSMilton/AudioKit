@@ -25,17 +25,15 @@
     return _kernel.seconds;
 }
 
+- (void)setMidiClient:(MIDIClientRef)midiClient {
+    _kernel.setMIDIClientRef(midiClient);
+}
+
 standardKernelPassthroughs()
 
 - (void)createParameters
 {
     standardSetup(JSMSequencer)
-}
-
-- (void)blahMIDI
-{
-    _kernel.createMIDIConnections(self.midiClient);
-    _kernel.ref = self.ref;
 }
 
 AUAudioUnitGeneratorOverrides(JSMSequencer)

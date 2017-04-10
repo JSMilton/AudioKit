@@ -13,7 +13,5 @@
 @property (nonatomic) UInt64 lastTimestamp;
 @property (nonatomic) double seconds;
 @property (nonatomic) MIDIClientRef midiClient;
-@property (nonatomic) MIDIEndpointRef ref;
 
-- (void)blahMIDI;
 @end
