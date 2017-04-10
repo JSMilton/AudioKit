@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4F390A191E9C0DEB006752FF /* AKJSMSequencerDSPKernel.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4FE98A961E9A61EA00F70A68 /* AKJSMSequencerDSPKernel.hpp */; };
 		4FE98A911E9A604A00F70A68 /* JSMSequencer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */; };
 		4FE98A941E9A618800F70A68 /* JSMSequencerAudioUnit.h in Headers */ = {isa = PBXBuildFile; fileRef = 4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4FE98A951E9A618800F70A68 /* JSMSequencerAudioUnit.mm in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */; };
@@ -3801,6 +3802,7 @@
 				C45380701C3A5BDA00A51738 /* AKFMOscillatorAudioUnit.h in Headers */,
 				C407180A1D2119E000665C02 /* Stk.h in Headers */,
 				C40718181D211A4F00665C02 /* Noise.h in Headers */,
+				4F390A191E9C0DEB006752FF /* AKJSMSequencerDSPKernel.hpp in Headers */,
 				C470478C1E76993300D9906F /* FM.h in Headers */,
 				C4537FDC1C3A438D00A51738 /* AKModalResonanceFilterDSPKernel.hpp in Headers */,
 				C45380191C3A4CCE00A51738 /* AKFlatFrequencyResponseReverbDSPKernel.hpp in Headers */,

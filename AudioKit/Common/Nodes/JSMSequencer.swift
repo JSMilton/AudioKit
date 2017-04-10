@@ -30,12 +30,6 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
         }
     }
     
-    open dynamic var isPlaying: Bool {
-        get {
-            return false
-        }
-    }
-    
     public var isStarted: Bool {
         return internalAU?.isPlaying() ?? false
     }
@@ -52,6 +46,10 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
         return internalAU?.beats ?? 0
     }
     
+    public func currentRelativeBeats() -> Double {
+        return currentBeats().truncatingRemainder(dividingBy: length)
+    }
+    
     public init(midiClient: MIDIClientRef) {
         
         _Self.register()
@@ -63,22 +61,23 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
             self?.internalAU = avAudioUnit.auAudioUnit as? AKAudioUnitType
         }
         
+        internalAU?.doStartStuff()
         internalAU?.midiClient = midiClient
     }
     
-    func createTrack(withEndpoint endpoint: MIDIEndpointRef) {
+    public func createTrack(withEndpoint endpoint: MIDIEndpointRef) {
+        internalAU?.createTrack(withEndpoint: endpoint)
+    }
+    
+    public func addNote(noteNumber: Int, with velocity: Int, at position: Double, to trackIndex: Int) {
+        internalAU?.addNote(Int32(noteNumber), withVelocity: Int32(velocity), atPosition: position, toTrack: Int32(trackIndex))
+    }
+    
+    public func removeNote(at position: Double, from trackIndex: Int) {
         
     }
     
-    func addNote(noteNumber: Int, with velocity: Int, at position: Double, to trackIndex: Int) {
-        
-    }
-    
-    func removeNote(at position: Double, from trackIndex: Int) {
-        
-    }
-    
-    func moveNote(at position: Double, by amount: Double, on trackIndex: Int) {
+    public func moveNote(at position: Double, by amount: Double, on trackIndex: Int) {
         
     }
 }

@@ -15,6 +15,7 @@
 {
     AKJSMSequencerDSPKernel _kernel;
     BufferedInputBus _inputBus;
+    int trackCount;
 }
 
 - (double)beats {
@@ -23,6 +24,27 @@
 
 - (void)setMidiClient:(MIDIClientRef)midiClient {
     _kernel.setMIDIClientRef(midiClient);
+}
+
+- (void)setTempo:(double)tempo {
+    _tempo = tempo;
+    _kernel.tempo = tempo;
+}
+
+- (void)createTrackWithEndpoint:(MIDIEndpointRef)endpoint
+{
+    _kernel.createTrack(trackCount, endpoint);
+    trackCount++;
+}
+
+- (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex
+{
+    _kernel.addNote(noteNumber, velocity, position, trackIndex);
+}
+
+- (void)doStartStuff
+{
+    trackCount = 0;
 }
 
 standardKernelPassthroughs()
