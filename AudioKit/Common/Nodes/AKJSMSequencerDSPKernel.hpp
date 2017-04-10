@@ -22,7 +22,7 @@ struct Note {
 struct Track {
     MIDIEndpointRef endpointRef;
     Note notes[64];
-    double lastPlayedPosition = DBL_MAX;
+    double lastPlayedPosition = -1;
 };
 
 class AKJSMSequencerDSPKernel: public AKDSPKernel, public AKOutputBuffered {
@@ -127,11 +127,13 @@ public:
         beats = (seconds * tempo) / 60.0;
 
         double relativeBeat = fmod(beats, 4.0);
+        double frameSeconds = frameCount / 44100.0;
+        double endBeat = relativeBeat + ((frameSeconds * tempo) / 60.0);
         
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
                 double pos = tracks[i].notes[j].position;
-                if (pos <= relativeBeat && tracks[i].lastPlayedPosition != pos && pos >= 0) {
+                if ((pos >= relativeBeat && pos < endBeat) && pos > tracks[i].lastPlayedPosition) {
                     playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
                     tracks[i].lastPlayedPosition = pos;
                 }
