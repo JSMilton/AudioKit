@@ -17,12 +17,8 @@
     BufferedInputBus _inputBus;
 }
 
-- (UInt64)lastTimestamp {
-    return _kernel.lastTimestamp;
-}
-
-- (double)seconds {
-    return _kernel.seconds;
+- (double)beats {
+    return _kernel.beats;
 }
 
 - (void)setMidiClient:(MIDIClientRef)midiClient {

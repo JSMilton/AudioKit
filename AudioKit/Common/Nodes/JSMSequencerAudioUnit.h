@@ -10,8 +10,6 @@
 #import <CoreMIDI/CoreMIDI.h>
 
 @interface JSMSequencerAudioUnit : AKAudioUnit
-@property (nonatomic) UInt64 lastTimestamp;
-@property (nonatomic) double seconds;
 @property (nonatomic) MIDIClientRef midiClient;
-
+@property (nonatomic) double beats;
 @end

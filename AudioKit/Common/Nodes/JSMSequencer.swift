@@ -48,16 +48,8 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
         internalAU?.stop()
     }
     
-    public func getTime() -> UInt64 {
-        return internalAU?.lastTimestamp ?? 0
-    }
-    
-    public func getSeconds() -> Double {
-        return internalAU?.seconds ?? 0
-    }
-    
     public func currentBeats() -> Double {
-        return 0
+        return internalAU?.beats ?? 0
     }
     
     public init(midiClient: MIDIClientRef) {

@@ -10,6 +10,18 @@
 
 #import "DSPKernel.hpp"
 #include <mach/mach_time.h>
+#include <vector>
+
+struct Note {
+    uint8_t noteNumber;
+    uint8_t velocity;
+    double position;
+};
+
+struct Track {
+    MIDIEndpointRef endpointRef;
+    Note notes[64];
+};
 
 class AKJSMSequencerDSPKernel: public AKDSPKernel, public AKOutputBuffered {
 public:
@@ -33,7 +45,9 @@ public:
         started = false;
     }
     
-    void destroy() {}
+    void destroy() {
+        MIDIPortDispose(outputPort);
+    }
     
     void reset() {
         resetted = true;
@@ -71,40 +85,42 @@ public:
             firstTimestamp = timestamp->mHostTime;
         }
         
-        lastTimestamp = convertTimeInNanoseconds(timestamp->mHostTime - firstTimestamp);
-        seconds = (double)lastTimestamp * (1.0 / 1e+9);
+        uint64_t elapsedHostTime = convertTimeInNanoseconds(timestamp->mHostTime - firstTimestamp);
+        double seconds = (double)elapsedHostTime * (1.0 / 1e+9);
+        beats = (seconds * 120.0) / 60.0;
         
-        if (seconds >= 0.25) {
-            seconds = 0;
-            firstTimestamp = timestamp->mHostTime;
-            
-            for (int i = 0; i < 16; i++) {
-                MIDIPacketList packetList;
-                
-                packetList.numPackets = 1;
-                
-                MIDIPacket* firstPacket = &packetList.packet[0];
-                
-                firstPacket->timeStamp = 0; // send immediately
-                
-                firstPacket->length = 3;
-                
-                firstPacket->data[0] = i;
-                
-                firstPacket->data[1] = 0x90;
-                firstPacket->data[2] = 127;
-                
-                MIDISend(outputPort, ref, &packetList);
-            }
-        }
+//        if (seconds >= 0.25) {
+//            seconds = 0;
+//            firstTimestamp = timestamp->mHostTime;
+//            
+//            for (int i = 0; i < 16; i++) {
+//                MIDIPacketList packetList;
+//                
+//                packetList.numPackets = 1;
+//                
+//                MIDIPacket* firstPacket = &packetList.packet[0];
+//                
+//                firstPacket->timeStamp = 0; // send immediately
+//                
+//                firstPacket->length = 3;
+//                
+//                firstPacket->data[0] = i;
+//                
+//                firstPacket->data[1] = 0x90;
+//                firstPacket->data[2] = 127;
+//                
+//                MIDISend(outputPort, ref, &packetList);
+//            }
+//        }
     }
     
 public:
     bool started = false;
     bool resetted = false;
-    UInt64 lastTimestamp;
-    UInt64 firstTimestamp = 0;
-    double seconds;
+    double beats = 0;
+    
+private:
     MIDIPortRef outputPort;
-    MIDIEndpointRef ref;
+    Track tracks[16];
+    uint64_t firstTimestamp = 0;
 };
