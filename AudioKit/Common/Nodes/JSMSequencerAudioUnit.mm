@@ -16,6 +16,7 @@
     AKJSMSequencerDSPKernel _kernel;
     BufferedInputBus _inputBus;
     int trackCount;
+    TPCircularBuffer *circBuffer;
 }
 
 - (double)beats {
@@ -39,12 +40,29 @@
 
 - (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex
 {
-    _kernel.addNote(noteNumber, velocity, position, trackIndex);
+    NoteUpdate update;
+    update.updatedNote.noteNumber = noteNumber;
+    update.updatedNote.velocity = velocity;
+    update.updatedNote.position = position;
+    update.currentPosition = position;
+    update.trackIndex = trackIndex;
+    update.type = ADD;
+    TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
+}
+
+- (void)removeNoteAtPosition:(double)position fromTrack:(int)trackIndex
+{
+    NoteUpdate update;
+    update.updatedNote.position = position;
+    update.trackIndex = trackIndex;
+    update.type = REMOVE;
+    TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
 }
 
 - (void)doStartStuff
 {
     trackCount = 0;
+    circBuffer = &_kernel.circBuffer;
 }
 
 standardKernelPassthroughs()

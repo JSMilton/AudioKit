@@ -74,7 +74,7 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     }
     
     public func removeNote(at position: Double, from trackIndex: Int) {
-        
+        internalAU?.removeNote(atPosition: position, fromTrack: Int32(trackIndex))
     }
     
     public func moveNote(at position: Double, by amount: Double, on trackIndex: Int) {

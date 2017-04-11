@@ -12,6 +12,7 @@
 #include <mach/mach_time.h>
 #include <vector>
 #include <float.h>
+#include "TPCircularBuffer.h"
 
 struct Note {
     uint8_t noteNumber;
@@ -22,7 +23,19 @@ struct Note {
 struct Track {
     MIDIEndpointRef endpointRef;
     Note notes[64];
-    double lastPlayedPosition = -1;
+};
+
+typedef enum UpdateType {
+    ADD,
+    MOVE,
+    REMOVE
+} UpdateType;
+
+struct NoteUpdate {
+    Note updatedNote;
+    int trackIndex;
+    double currentPosition = -1;
+    UpdateType type;
 };
 
 class AKJSMSequencerDSPKernel: public AKDSPKernel, public AKOutputBuffered {
@@ -33,6 +46,7 @@ public:
     
     void init(int _channels, double _sampleRate) override {
         AKDSPKernel::init(channels, sampleRate);
+        TPCircularBufferInit(&circBuffer, 4096);
     }
     
     void setMIDIClientRef(MIDIClientRef client) {
@@ -59,10 +73,25 @@ public:
         tracks[trackIndex].endpointRef = endpoint;
     }
     
-    void addNote(uint8_t noteNumber, uint8_t velocity, double position, int trackIndex) {
-        tracks[trackIndex].notes[0].noteNumber = noteNumber;
-        tracks[trackIndex].notes[0].velocity = velocity;
-        tracks[trackIndex].notes[0].position = position;
+    void addNote(Note note, int trackIndex) {
+        int noteIndex = 0;
+        for (int i = 0; i < 64; i++) {
+            if (tracks[trackIndex].notes[i].position == -1)  {
+                noteIndex = i;
+                break;
+            }
+        }
+
+        tracks[trackIndex].notes[noteIndex] = note;
+    }
+    
+    void removeNote(Note note, int trackIndex) {
+        for (int i = 0; i < 64; i++) {
+            if (tracks[trackIndex].notes[i].position == note.position)  {
+                tracks[trackIndex].notes[i].position = -1;
+                break;
+            }
+        }
     }
     
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
@@ -112,10 +141,32 @@ public:
         MIDISend(outputPort, ref, &packetList2);
     }
     
+    void processBuffer() {
+        int32_t availableBytes;
+        NoteUpdate *updates = (NoteUpdate*)TPCircularBufferTail(&circBuffer, &availableBytes);
+        int total = availableBytes / sizeof(NoteUpdate);
+        for (int i = 0; i < total; i++) {
+            switch (updates[i].type) {
+                case ADD:
+                    addNote(updates[i].updatedNote, updates[i].trackIndex);
+                    break;
+                case MOVE:
+                    break;
+                case REMOVE:
+                    removeNote(updates[i].updatedNote, updates[i].trackIndex);
+                    break;
+            }
+        }
+        
+        TPCircularBufferConsume(&circBuffer, availableBytes);
+    }
+    
     void processWithEvents(AudioTimeStamp const* timestamp,
                            AUAudioFrameCount frameCount,
                            AURenderEvent const* events)
     {
+        processBuffer();
+        
         if (!started) { return; }
         
         if (firstTimestamp == 0) {
@@ -126,16 +177,28 @@ public:
         double seconds = (double)elapsedHostTime * (1.0 / 1e+9);
         beats = (seconds * tempo) / 60.0;
 
-        double relativeBeat = fmod(beats, 4.0);
+        double offset = floor(beats / 4.0) * 4.0;
         double frameSeconds = frameCount / 44100.0;
-        double endBeat = relativeBeat + ((frameSeconds * tempo) / 60.0);
+        double endBeat = beats + ((frameSeconds * tempo) / 60.0);
+        double endOffset = floor(endBeat / 4.0) * 4.0;
         
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
                 double pos = tracks[i].notes[j].position;
-                if ((pos >= relativeBeat && pos < endBeat) && pos > tracks[i].lastPlayedPosition) {
+                
+                if (pos == -1) { continue; }
+                
+                pos += offset;
+                
+                if (pos >= beats && pos < endBeat) {
                     playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
-                    tracks[i].lastPlayedPosition = pos;
+                }
+                
+                if (endOffset > offset) {
+                    pos += 4.0;
+                    if (pos >= beats && pos < endBeat) {
+                        playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
+                    }
                 }
             }
         }
@@ -146,6 +209,8 @@ public:
     bool resetted = false;
     double beats = 0;
     double tempo = 120.0;
+    
+    TPCircularBuffer circBuffer;
     
 private:
     MIDIPortRef outputPort;
