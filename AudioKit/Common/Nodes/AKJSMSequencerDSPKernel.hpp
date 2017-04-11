@@ -95,6 +95,15 @@ public:
         }
     }
     
+    void moveNote(double currentPosition, Note note, int trackIndex) {
+        for (int i = 0; i < 64; i++) {
+            if (tracks[trackIndex].notes[i].position == currentPosition)  {
+                tracks[trackIndex].notes[i].position = note.position;
+                break;
+            }
+        }
+    }
+    
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
     
     void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
@@ -152,6 +161,7 @@ public:
                     addNote(updates[i].updatedNote, updates[i].trackIndex);
                     break;
                 case MOVE:
+                    moveNote(updates[i].currentPosition, updates[i].updatedNote, updates[i].trackIndex);
                     break;
                 case REMOVE:
                     removeNote(updates[i].updatedNote, updates[i].trackIndex);

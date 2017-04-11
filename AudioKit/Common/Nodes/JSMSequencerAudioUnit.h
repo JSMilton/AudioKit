@@ -19,5 +19,6 @@
 - (void)createTrackWithEndpoint:(MIDIEndpointRef)endpoint;
 - (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex;
 - (void)removeNoteAtPosition:(double)position fromTrack:(int)trackIndex;
+- (void)moveNoteAtPosition:(double)position byAmount:(double)amount onTrack:(int)trackIndex;
 - (void)doStartStuff;
 @end

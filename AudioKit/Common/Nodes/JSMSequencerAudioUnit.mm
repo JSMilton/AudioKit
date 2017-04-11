@@ -69,6 +69,16 @@
     TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
 }
 
+- (void)moveNoteAtPosition:(double)position byAmount:(double)amount onTrack:(int)trackIndex
+{
+    NoteUpdate update;
+    update.updatedNote.position = position + amount;
+    update.currentPosition = position;
+    update.trackIndex = trackIndex;
+    update.type = MOVE;
+    TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
+}
+
 - (void)doStartStuff
 {
     trackCount = 0;
