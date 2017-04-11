@@ -59,6 +59,7 @@ public:
     
     void stop() {
         started = false;
+        firstTimestamp = 0;
     }
     
     void destroy() {
@@ -175,12 +176,14 @@ public:
         
         uint64_t elapsedHostTime = convertTimeInNanoseconds(timestamp->mHostTime - firstTimestamp);
         double seconds = (double)elapsedHostTime * (1.0 / 1e+9);
-        beats = (seconds * tempo) / 60.0;
+        double beat = (seconds * (tempo * rate)) / 60.0;
 
-        double offset = floor(beats / 4.0) * 4.0;
+        double offset = floor(beats / length) * length;
         double frameSeconds = frameCount / 44100.0;
-        double endBeat = beats + ((frameSeconds * tempo) / 60.0);
-        double endOffset = floor(endBeat / 4.0) * 4.0;
+        double endBeat = beat + ((frameSeconds * (tempo * rate)) / 60.0);
+        double endOffset = floor(endBeat / length) * length;
+        
+        beats = endBeat;
         
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
@@ -190,13 +193,11 @@ public:
                 
                 pos += offset;
                 
-                if (pos >= beats && pos < endBeat) {
+                if (pos >= beat && pos < endBeat) {
                     playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
-                }
-                
-                if (endOffset > offset) {
-                    pos += 4.0;
-                    if (pos >= beats && pos < endBeat) {
+                } else if (endOffset > offset) {
+                    pos += length;
+                    if (pos >= beat && pos < endBeat) {
                         playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
                     }
                 }
@@ -207,8 +208,10 @@ public:
 public:
     bool started = false;
     bool resetted = false;
-    double beats = 0;
+    double beats = 0.0;
     double tempo = 120.0;
+    double length = 4.0;
+    double rate = 1.0;
     
     TPCircularBuffer circBuffer;
     

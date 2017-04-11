@@ -14,19 +14,19 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     
     open dynamic var length = 4.0 {
         didSet {
-            
+            internalAU?.length = length
         }
     }
     
     open dynamic var rate = 1.0 {
         didSet {
-            
+            internalAU?.rate = rate
         }
     }
     
     open dynamic var tempo = 120.0 {
         didSet {
-            
+            internalAU?.tempo = tempo
         }
     }
     

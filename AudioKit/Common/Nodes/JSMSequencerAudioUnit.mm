@@ -32,6 +32,16 @@
     _kernel.tempo = tempo;
 }
 
+- (void)setLength:(double)length {
+    _length = length;
+    _kernel.length = length;
+}
+
+- (void)setRate:(double)rate {
+    _rate = rate;
+    _kernel.rate = rate;
+}
+
 - (void)createTrackWithEndpoint:(MIDIEndpointRef)endpoint
 {
     _kernel.createTrack(trackCount, endpoint);
