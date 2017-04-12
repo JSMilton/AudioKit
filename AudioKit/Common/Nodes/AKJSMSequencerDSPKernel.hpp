@@ -242,6 +242,7 @@ private:
                     break;
                 case UPDATE:
                     updateNote(updates[i].updatedNote, updates[i].trackIndex);
+                    break;
                 case CLEAR:
                     clearSequence();
                     break;

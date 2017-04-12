@@ -124,5 +124,7 @@ FOUNDATION_EXPORT const unsigned char AudioKitVersionString[];
 // Plots
 #import "EZAudio.h"
 
+#if !TARGET_OS_TV
 // Me
 #import "JSMSequencerAudioUnit.h"
+#endif
