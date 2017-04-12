@@ -211,15 +211,7 @@ public:
         
         if (tempoChanged) {
             tempoChanged = false;
-            
-            // get the beat value relative to the start of the loop,
-            // use the stored beats value as it's unaffected by the new tempo
-            double relativeBeat = fmod(beats, length);
-            
-            // convert this relative value into host ticks. this will be the new firstTimeStamp.
-            // this will maintain the current beat position, whilst allowing the rest of the sequence to
-            // run at the new tempo
-            uint64_t ticks = SEBeatsToHostTicks(relativeBeat, relativeTempo);
+            uint64_t ticks = SEBeatsToHostTicks(beats, relativeTempo);
             firstTimestamp = timestamp->mHostTime - ticks;
         }
 
