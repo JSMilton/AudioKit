@@ -77,6 +77,11 @@ public:
         tempoChanged = true;
     }
     
+    void setRate(double r) {
+        rate = r;
+        tempoChanged = true;
+    }
+    
     void createTrack(int trackIndex, MIDIEndpointRef endpoint) {
         tracks[trackIndex].endpointRef = endpoint;
     }
@@ -192,25 +197,22 @@ public:
         }
         
         double relativeTempo = tempo * rate;
-        double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, relativeTempo);
         
         if (tempoChanged) {
             tempoChanged = false;
             
-            // get the beat value relative to the start of the loop
-            double relativeBeat = fmod(beat, length);
+            // get the beat value relative to the start of the loop,
+            // use the stored beats value as it's unaffected by the new tempo
+            double relativeBeat = fmod(beats, length);
             
             // convert this relative value into host ticks. this will be the new firstTimeStamp.
             // this will maintain the current beat position, whilst allowing the rest of the sequence to
             // run at the new tempo
             uint64_t ticks = SEBeatsToHostTicks(relativeBeat, relativeTempo);
-            firstTimestamp = ticks;
-            
-            printf("%f\n", relativeBeat);
-            printf("%f\n", beat);
-            printf("\n");
+            firstTimestamp = timestamp->mHostTime - ticks;
         }
 
+        double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, relativeTempo);
         double frameSeconds = frameCount / 44100.0;
         double endBeat = beat + SESecondsToBeats(frameSeconds, relativeTempo);
         double endOffset = floor(endBeat / length) * length;
@@ -242,7 +244,6 @@ public:
     bool resetted = false;
     double beats = 0.0;
     double length = 4.0;
-    double rate = 1.0;
     
     TPCircularBuffer circBuffer;
     
@@ -252,4 +253,5 @@ private:
     uint64_t firstTimestamp = 0;
     bool tempoChanged = false;
     double tempo = 120.0;
+    double rate = 1.0;
 };

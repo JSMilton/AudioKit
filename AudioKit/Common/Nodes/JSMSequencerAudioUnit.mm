@@ -39,7 +39,7 @@
 
 - (void)setRate:(double)rate {
     _rate = rate;
-    _kernel.rate = rate;
+    _kernel.setRate(rate);
 }
 
 - (void)createTrackWithEndpoint:(MIDIEndpointRef)endpoint
