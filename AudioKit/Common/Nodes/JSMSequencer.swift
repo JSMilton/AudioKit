@@ -80,4 +80,8 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     public func moveNote(at position: Double, by amount: Double, on trackIndex: Int) {
         internalAU?.moveNote(atPosition: position, byAmount: amount, onTrack: Int32(trackIndex))
     }
+    
+    public func updateVelocity(at position: Double, to velocity: Int, on trackIndex: Int) {
+        internalAU?.updateVelocity(atPosition: position, toVelocity: Int32(velocity), onTrack: Int32(trackIndex))
+    }
 }

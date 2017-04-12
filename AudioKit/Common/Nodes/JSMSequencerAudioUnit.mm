@@ -29,7 +29,7 @@
 
 - (void)setTempo:(double)tempo {
     _tempo = tempo;
-    _kernel.tempo = tempo;
+    _kernel.setTempo(tempo);
 }
 
 - (void)setLength:(double)length {
@@ -54,7 +54,6 @@
     update.updatedNote.noteNumber = noteNumber;
     update.updatedNote.velocity = velocity;
     update.updatedNote.position = position;
-    update.currentPosition = position;
     update.trackIndex = trackIndex;
     update.type = ADD;
     TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
@@ -76,6 +75,16 @@
     update.currentPosition = position;
     update.trackIndex = trackIndex;
     update.type = MOVE;
+    TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
+}
+
+- (void)updateVelocityAtPosition:(double)position toVelocity:(int)velocity onTrack:(int)trackIndex
+{
+    NoteUpdate update;
+    update.updatedNote.position = position;
+    update.updatedNote.velocity = velocity;
+    update.trackIndex = trackIndex;
+    update.type = UPDATE;
     TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
 }
 

@@ -13,6 +13,7 @@
 #include <vector>
 #include <float.h>
 #include "TPCircularBuffer.h"
+#include "SECommon.h"
 
 struct Note {
     uint8_t noteNumber;
@@ -28,7 +29,8 @@ struct Track {
 typedef enum UpdateType {
     ADD,
     MOVE,
-    REMOVE
+    REMOVE,
+    UPDATE
 } UpdateType;
 
 struct NoteUpdate {
@@ -70,6 +72,11 @@ public:
         resetted = true;
     }
     
+    void setTempo(double t) {
+        tempo = t;
+        tempoChanged = true;
+    }
+    
     void createTrack(int trackIndex, MIDIEndpointRef endpoint) {
         tracks[trackIndex].endpointRef = endpoint;
     }
@@ -104,6 +111,15 @@ public:
         }
     }
     
+    void updateNote(Note note, int trackIndex) {
+        for (int i = 0; i < 64; i++) {
+            if (tracks[trackIndex].notes[i].position == note.position)  {
+                tracks[trackIndex].notes[i] = note;
+                break;
+            }
+        }
+    }
+    
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
     
     void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
@@ -116,18 +132,6 @@ public:
         }
     }
     
-    uint64_t convertTimeInNanoseconds(uint64_t time)
-    {
-        static mach_timebase_info_data_t s_timebase_info;
-        
-        if (s_timebase_info.denom == 0)
-        {
-            (void) mach_timebase_info(&s_timebase_info);
-        }
-        
-        return (uint64_t)((time * s_timebase_info.numer) / s_timebase_info.denom);
-    }
-    
     void playMIDINote(uint8_t note, uint8_t velocity, MIDIEndpointRef ref) {
         MIDIPacketList packetList;
         packetList.numPackets = 1;
@@ -135,8 +139,8 @@ public:
         firstPacket->timeStamp = 0;
         firstPacket->length = 3;
         firstPacket->data[0] = 0x90;
-        firstPacket->data[1] = 0;
-        firstPacket->data[2] = 127;
+        firstPacket->data[1] = note;
+        firstPacket->data[2] = velocity;
         
         MIDIPacketList packetList2;
         packetList2.numPackets = 1;
@@ -166,6 +170,9 @@ public:
                 case REMOVE:
                     removeNote(updates[i].updatedNote, updates[i].trackIndex);
                     break;
+                case UPDATE:
+                    updateNote(updates[i].updatedNote, updates[i].trackIndex);
+                    break;
             }
         }
         
@@ -184,15 +191,30 @@ public:
             firstTimestamp = timestamp->mHostTime;
         }
         
-        uint64_t elapsedHostTime = convertTimeInNanoseconds(timestamp->mHostTime - firstTimestamp);
-        double seconds = (double)elapsedHostTime * (1.0 / 1e+9);
-        double beat = (seconds * (tempo * rate)) / 60.0;
-
-        double offset = floor(beats / length) * length;
-        double frameSeconds = frameCount / 44100.0;
-        double endBeat = beat + ((frameSeconds * (tempo * rate)) / 60.0);
-        double endOffset = floor(endBeat / length) * length;
+        double relativeTempo = tempo * rate;
+        double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, relativeTempo);
         
+        if (tempoChanged) {
+            tempoChanged = false;
+            
+            // get the beat value relative to the start of the loop
+            double relativeBeat = fmod(beat, length);
+            
+            // convert this relative value into host ticks. this will be the new firstTimeStamp.
+            // this will maintain the current beat position, whilst allowing the rest of the sequence to
+            // run at the new tempo
+            uint64_t ticks = SEBeatsToHostTicks(relativeBeat, relativeTempo);
+            firstTimestamp = ticks;
+            
+            printf("%f\n", relativeBeat);
+            printf("%f\n", beat);
+            printf("\n");
+        }
+
+        double frameSeconds = frameCount / 44100.0;
+        double endBeat = beat + SESecondsToBeats(frameSeconds, relativeTempo);
+        double endOffset = floor(endBeat / length) * length;
+        double offset = floor(beat / length) * length;
         beats = endBeat;
         
         for (int i = 0; i < 16; i++) {
@@ -219,7 +241,6 @@ public:
     bool started = false;
     bool resetted = false;
     double beats = 0.0;
-    double tempo = 120.0;
     double length = 4.0;
     double rate = 1.0;
     
@@ -229,4 +250,6 @@ private:
     MIDIPortRef outputPort;
     Track tracks[16];
     uint64_t firstTimestamp = 0;
+    bool tempoChanged = false;
+    double tempo = 120.0;
 };
