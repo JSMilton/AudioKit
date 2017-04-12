@@ -42,6 +42,8 @@ extension MIDIPacket {
 public struct AKMIDIEvent {
 
     // MARK: - Properties
+    
+    public var timestamp: UInt64 = 0
 
     /// Internal data
     public var internalData = [MIDIByte](zeros: 128)
@@ -157,6 +159,8 @@ public struct AKMIDIEvent {
         if let existingLength = length {
             internalData = Array(internalData.prefix(Int(existingLength)))
         }
+        
+        timestamp = packet.timeStamp
     }
 
     public static func generateFrom(bluetoothData: [MIDIByte]) -> [AKMIDIEvent] {
