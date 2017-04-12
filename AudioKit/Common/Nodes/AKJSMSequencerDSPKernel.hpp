@@ -30,7 +30,8 @@ typedef enum UpdateType {
     ADD,
     MOVE,
     REMOVE,
-    UPDATE
+    UPDATE,
+    CLEAR
 } UpdateType;
 
 struct NoteUpdate {
@@ -125,6 +126,14 @@ public:
         }
     }
     
+    void clearSequence() {
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 64; j++) {
+                tracks[i].notes[j].position = -1;
+            }
+        }
+    }
+    
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
     
     void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
@@ -177,6 +186,8 @@ public:
                     break;
                 case UPDATE:
                     updateNote(updates[i].updatedNote, updates[i].trackIndex);
+                case CLEAR:
+                    clearSequence();
                     break;
             }
         }

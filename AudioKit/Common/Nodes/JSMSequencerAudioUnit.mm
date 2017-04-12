@@ -88,6 +88,13 @@
     TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
 }
 
+- (void)clearSequence
+{
+    NoteUpdate update;
+    update.type = CLEAR;
+    TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
+}
+
 - (void)doStartStuff
 {
     trackCount = 0;

@@ -84,4 +84,8 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     public func updateVelocity(at position: Double, to velocity: Int, on trackIndex: Int) {
         internalAU?.updateVelocity(atPosition: position, toVelocity: Int32(velocity), onTrack: Int32(trackIndex))
     }
+    
+    public func clear() {
+        internalAU?.clearSequence()
+    }
 }
