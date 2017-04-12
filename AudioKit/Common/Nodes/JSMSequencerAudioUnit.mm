@@ -95,6 +95,14 @@
     TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
 }
 
+- (void)setPosition:(double)position
+{
+    NoteUpdate update;
+    update.type = POSITION;
+    update.currentPosition = position;
+    TPCircularBufferProduceBytes(circBuffer, &update, sizeof(NoteUpdate));
+}
+
 - (void)doStartStuff
 {
     trackCount = 0;

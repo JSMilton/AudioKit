@@ -22,5 +22,6 @@
 - (void)updateVelocityAtPosition:(double)position toVelocity:(int)velocity onTrack:(int)trackIndex;
 - (void)moveNoteAtPosition:(double)position byAmount:(double)amount onTrack:(int)trackIndex;
 - (void)clearSequence;
+- (void)setPosition:(double)position;
 - (void)doStartStuff;
 @end

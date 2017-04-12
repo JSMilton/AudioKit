@@ -88,4 +88,8 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     public func clear() {
         internalAU?.clearSequence()
     }
+    
+    public func setPosition(_ pos: Double) {
+        internalAU?.setPosition(pos)
+    }
 }

@@ -31,7 +31,8 @@ typedef enum UpdateType {
     MOVE,
     REMOVE,
     UPDATE,
-    CLEAR
+    CLEAR,
+    POSITION
 } UpdateType;
 
 struct NoteUpdate {
@@ -63,6 +64,7 @@ public:
     void stop() {
         started = false;
         firstTimestamp = 0;
+        beats = 0;
     }
     
     void destroy() {
@@ -71,6 +73,8 @@ public:
     
     void reset() {
         resetted = true;
+        firstTimestamp = 0;
+        beats = 0;
     }
     
     void setTempo(double t) {
@@ -87,6 +91,65 @@ public:
         tracks[trackIndex].endpointRef = endpoint;
     }
     
+    void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
+    
+    void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
+        for (int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
+            int frameOffset = int(frameIndex + bufferOffset);
+            for (int channel = 0; channel < channels; ++channel) {
+                float *out = (float *)outBufferListPtr->mBuffers[channel].mData + frameOffset;
+                *out = 0.0;
+            }
+        }
+    }
+    
+    void processWithEvents(AudioTimeStamp const* timestamp,
+                           AUAudioFrameCount frameCount,
+                           AURenderEvent const* events)
+    {
+        processBuffer();
+        
+        if (!started) { return; }
+        
+        if (firstTimestamp == 0) {
+            firstTimestamp = timestamp->mHostTime;
+        }
+        
+        if (tempoChanged) {
+            tempoChanged = false;
+            uint64_t ticks = SEBeatsToHostTicks(beats, tempo);
+            firstTimestamp = timestamp->mHostTime - ticks;
+        }
+
+        double relativeLength = length / rate;
+        double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, tempo);
+        double frameSeconds = frameCount / 44100.0;
+        double endBeat = beat + SESecondsToBeats(frameSeconds, tempo);
+        double endOffset = floor(endBeat / relativeLength) * relativeLength;
+        double offset = floor(beat / relativeLength) * relativeLength;
+        beats = endBeat;
+        
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 64; j++) {
+                double pos = tracks[i].notes[j].position / rate;
+                
+                if (pos == -1) { continue; }
+                
+                pos += offset;
+                
+                if (pos >= beat && pos < endBeat) {
+                    playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
+                } else if (endOffset > offset) {
+                    pos += relativeLength;
+                    if (pos >= beat && pos < endBeat) {
+                        playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
+                    }
+                }
+            }
+        }
+    }
+    
+private:
     void addNote(Note note, int trackIndex) {
         int noteIndex = 0;
         for (int i = 0; i < 64; i++) {
@@ -95,7 +158,7 @@ public:
                 break;
             }
         }
-
+        
         tracks[trackIndex].notes[noteIndex] = note;
     }
     
@@ -134,16 +197,9 @@ public:
         }
     }
     
-    void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
-    
-    void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
-        for (int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
-            int frameOffset = int(frameIndex + bufferOffset);
-            for (int channel = 0; channel < channels; ++channel) {
-                float *out = (float *)outBufferListPtr->mBuffers[channel].mData + frameOffset;
-                *out = 0.0;
-            }
-        }
+    void setPosition(double pos) {
+        beats = pos;
+        tempoChanged = true;
     }
     
     void playMIDINote(uint8_t note, uint8_t velocity, MIDIEndpointRef ref) {
@@ -189,57 +245,13 @@ public:
                 case CLEAR:
                     clearSequence();
                     break;
+                case POSITION:
+                    setPosition(updates[i].currentPosition);
+                    break;
             }
         }
         
         TPCircularBufferConsume(&circBuffer, availableBytes);
-    }
-    
-    void processWithEvents(AudioTimeStamp const* timestamp,
-                           AUAudioFrameCount frameCount,
-                           AURenderEvent const* events)
-    {
-        processBuffer();
-        
-        if (!started) { return; }
-        
-        if (firstTimestamp == 0) {
-            firstTimestamp = timestamp->mHostTime;
-        }
-        
-        double relativeTempo = tempo * rate;
-        
-        if (tempoChanged) {
-            tempoChanged = false;
-            uint64_t ticks = SEBeatsToHostTicks(beats, relativeTempo);
-            firstTimestamp = timestamp->mHostTime - ticks;
-        }
-
-        double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, relativeTempo);
-        double frameSeconds = frameCount / 44100.0;
-        double endBeat = beat + SESecondsToBeats(frameSeconds, relativeTempo);
-        double endOffset = floor(endBeat / length) * length;
-        double offset = floor(beat / length) * length;
-        beats = endBeat;
-        
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 64; j++) {
-                double pos = tracks[i].notes[j].position;
-                
-                if (pos == -1) { continue; }
-                
-                pos += offset;
-                
-                if (pos >= beat && pos < endBeat) {
-                    playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
-                } else if (endOffset > offset) {
-                    pos += length;
-                    if (pos >= beat && pos < endBeat) {
-                        playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
-                    }
-                }
-            }
-        }
     }
     
 public:
