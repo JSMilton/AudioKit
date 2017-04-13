@@ -10,6 +10,7 @@
 #import "AKJSMSequencerDSPKernel.hpp"
 #import "BufferedAudioBus.hpp"
 #import <AudioKit/AudioKit-Swift.h>
+#import "AbletonLinkManager.h"
 
 @implementation JSMSequencerAudioUnit
 {
@@ -107,6 +108,7 @@
 {
     trackCount = 0;
     circBuffer = &_kernel.circBuffer;
+    _kernel.setABLinkRef((ABLLinkRef)[[AbletonLinkManager shared] getLinkRef]);
 }
 
 standardKernelPassthroughs()

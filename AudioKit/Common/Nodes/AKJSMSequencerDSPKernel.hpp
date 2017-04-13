@@ -14,6 +14,7 @@
 #include <float.h>
 #include "TPCircularBuffer.h"
 #include "SECommon.h"
+#include "ABLLink.h"
 
 struct Note {
     uint8_t noteNumber;
@@ -57,6 +58,10 @@ public:
         MIDIOutputPortCreate(client, CFSTR("Deep-808 Internal"), &outputPort);
     }
     
+    void setABLinkRef(ABLLinkRef ref) {
+        linkRef = ref;
+    }
+    
     void start() {
         started = true;
     }
@@ -84,7 +89,6 @@ public:
     
     void setRate(double r) {
         rate = r;
-        tempoChanged = true;
     }
     
     void createTrack(int trackIndex, MIDIEndpointRef endpoint) {
@@ -119,10 +123,13 @@ public:
             tempoChanged = false;
             uint64_t ticks = SEBeatsToHostTicks(beats, tempo);
             firstTimestamp = timestamp->mHostTime - ticks;
+            setLinkTempo(tempo, timestamp->mHostTime);
         }
 
-        double relativeLength = length / rate;
         double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, tempo);
+        beat = linkAdjustedBeat(beat, timestamp->mHostTime);
+        
+        double relativeLength = length / rate;
         double frameSeconds = frameCount / 44100.0;
         double endBeat = beat + SESecondsToBeats(frameSeconds, tempo);
         double endOffset = floor(endBeat / relativeLength) * relativeLength;
@@ -255,6 +262,26 @@ private:
         TPCircularBufferConsume(&circBuffer, availableBytes);
     }
     
+    double linkAdjustedBeat(double beat, uint64_t hostTime) {
+        if (ABLLinkIsEnabled(linkRef)) {
+            ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
+            double linkBeat = ABLLinkBeatAtTime(timeLine, hostTime, length);
+            if (fabs(linkBeat - beat) > 0.05) {
+                return linkBeat;
+            }
+        }
+        
+        return beat;
+    }
+    
+    void setLinkTempo(double tempo, uint64_t hostTime) {
+        if (ABLLinkIsEnabled(linkRef)) {
+            ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
+            ABLLinkSetTempo(timeLine, tempo, hostTime);
+            ABLLinkCommitAudioTimeline(linkRef, timeLine);
+        }
+    }
+    
 public:
     bool started = false;
     bool resetted = false;
@@ -270,4 +297,7 @@ private:
     bool tempoChanged = false;
     double tempo = 120.0;
     double rate = 1.0;
+    ABLLinkRef linkRef;
+    
+    int printThrottleCount = 0;
 };

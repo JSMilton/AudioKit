@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A746BCC1E9F96E5007C1D56 /* ABLLink.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A746BC71E9F96E5007C1D56 /* ABLLink.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A746BCD1E9F96E5007C1D56 /* ABLLinkSettingsViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A746BC81E9F96E5007C1D56 /* ABLLinkSettingsViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A746BCE1E9F96E5007C1D56 /* ABLLinkUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A746BC91E9F96E5007C1D56 /* ABLLinkUtils.h */; };
+		1A746BCF1E9F96E5007C1D56 /* libABLLink.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A746BCB1E9F96E5007C1D56 /* libABLLink.a */; };
+		1A746BD21E9F9C12007C1D56 /* AbletonLinkManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A746BD01E9F9C12007C1D56 /* AbletonLinkManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1A746BD31E9F9C12007C1D56 /* AbletonLinkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A746BD11E9F9C12007C1D56 /* AbletonLinkManager.m */; };
 		4F390A191E9C0DEB006752FF /* AKJSMSequencerDSPKernel.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4FE98A961E9A61EA00F70A68 /* AKJSMSequencerDSPKernel.hpp */; };
 		4FE98A911E9A604A00F70A68 /* JSMSequencer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */; };
 		4FE98A941E9A618800F70A68 /* JSMSequencerAudioUnit.h in Headers */ = {isa = PBXBuildFile; fileRef = 4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -829,6 +835,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A746BC71E9F96E5007C1D56 /* ABLLink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ABLLink.h; sourceTree = "<group>"; };
+		1A746BC81E9F96E5007C1D56 /* ABLLinkSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ABLLinkSettingsViewController.h; sourceTree = "<group>"; };
+		1A746BC91E9F96E5007C1D56 /* ABLLinkUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ABLLinkUtils.h; sourceTree = "<group>"; };
+		1A746BCB1E9F96E5007C1D56 /* libABLLink.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libABLLink.a; sourceTree = "<group>"; };
+		1A746BD01E9F9C12007C1D56 /* AbletonLinkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbletonLinkManager.h; sourceTree = "<group>"; };
+		1A746BD11E9F9C12007C1D56 /* AbletonLinkManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AbletonLinkManager.m; sourceTree = "<group>"; };
 		4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSMSequencer.swift; sourceTree = "<group>"; };
 		4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSMSequencerAudioUnit.h; sourceTree = "<group>"; };
 		4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = JSMSequencerAudioUnit.mm; sourceTree = "<group>"; };
@@ -1668,15 +1680,46 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A746BCF1E9F96E5007C1D56 /* libABLLink.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1A746BC51E9F96CD007C1D56 /* AbletonLink */ = {
+			isa = PBXGroup;
+			children = (
+				1A746BC61E9F96E5007C1D56 /* include */,
+				1A746BCA1E9F96E5007C1D56 /* lib */,
+				1A746BD01E9F9C12007C1D56 /* AbletonLinkManager.h */,
+				1A746BD11E9F9C12007C1D56 /* AbletonLinkManager.m */,
+			);
+			name = AbletonLink;
+			sourceTree = "<group>";
+		};
+		1A746BC61E9F96E5007C1D56 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				1A746BC71E9F96E5007C1D56 /* ABLLink.h */,
+				1A746BC81E9F96E5007C1D56 /* ABLLinkSettingsViewController.h */,
+				1A746BC91E9F96E5007C1D56 /* ABLLinkUtils.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		1A746BCA1E9F96E5007C1D56 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				1A746BCB1E9F96E5007C1D56 /* libABLLink.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
 		4FE98A8F1E9A5FC500F70A68 /* Sequencer */ = {
 			isa = PBXGroup;
 			children = (
+				1A746BC51E9F96CD007C1D56 /* AbletonLink */,
 				4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */,
 				4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */,
 				4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */,
@@ -3731,6 +3774,7 @@
 				C40C41521C40E3A5009D870B /* EZAudioDisplayLink.h in Headers */,
 				C40C41641C40E3A5009D870B /* EZMicrophone.h in Headers */,
 				C4537FF31C3A438D00A51738 /* AKToneComplementFilterAudioUnit.h in Headers */,
+				1A746BD21E9F9C12007C1D56 /* AbletonLinkManager.h in Headers */,
 				C45380411C3A599F00A51738 /* AKFrequencyTrackerAudioUnit.h in Headers */,
 				C49D695B1D1F1C6500BF018A /* AKPWMOscillatorBankAudioUnit.h in Headers */,
 				C487B60A1DD9235F00C56B59 /* Clarinet.h in Headers */,
@@ -3760,6 +3804,7 @@
 				C48C6C4F1D3C15F1008EA51B /* kiss_fft.h in Headers */,
 				C49D69721D1F1DE300BF018A /* AKMorphingOscillatorBankAudioUnit.h in Headers */,
 				C4BEAA121DEC3A9800186C50 /* AKAudioUnit.h in Headers */,
+				1A746BCC1E9F96E5007C1D56 /* ABLLink.h in Headers */,
 				C40718061D2119BF00665C02 /* SineWave.h in Headers */,
 				C42F35041C057E03000E937C /* AudioKit.h in Headers */,
 				C40C415C1C40E3A5009D870B /* EZAudioPlayer.h in Headers */,
@@ -3782,6 +3827,7 @@
 				C48C6CBF1D3C15F1008EA51B /* soundpipe.h in Headers */,
 				C40718021D21199100665C02 /* DelayA.h in Headers */,
 				C468096E1CEECB6900ADFC05 /* AKPitchShifterAudioUnit.h in Headers */,
+				1A746BCE1E9F96E5007C1D56 /* ABLLinkUtils.h in Headers */,
 				C47AC61C1D5D53C40005E485 /* AKBoosterAudioUnit.h in Headers */,
 				C40717CB1D21195000665C02 /* Mandolin.h in Headers */,
 				C4537FA91C3A438D00A51738 /* AKAutoWahAudioUnit.h in Headers */,
@@ -3820,6 +3866,7 @@
 				C45380941C3A5C0C00A51738 /* AKWhiteNoiseDSPKernel.hpp in Headers */,
 				C453803E1C3A599F00A51738 /* AKAmplitudeTrackerDSPKernel.hpp in Headers */,
 				C4537FC01C3A438D00A51738 /* AKEqualizerFilterDSPKernel.hpp in Headers */,
+				1A746BCD1E9F96E5007C1D56 /* ABLLinkSettingsViewController.h in Headers */,
 				C40C41281C40E344009D870B /* BufferedAudioBus.hpp in Headers */,
 				C4537F2B1C39D2A300A51738 /* AKBitCrusherDSPKernel.hpp in Headers */,
 				C4537FC41C3A438D00A51738 /* AKFormantFilterDSPKernel.hpp in Headers */,
@@ -4542,6 +4589,7 @@
 				C4F8C9311DCA8CE4001F38F2 /* v.c in Sources */,
 				C4F8C8E31DCA8CE4001F38F2 /* incr.c in Sources */,
 				C4F8C9011DCA8CE4001F38F2 /* pluck.c in Sources */,
+				1A746BD31E9F9C12007C1D56 /* AbletonLinkManager.m in Sources */,
 				C4F8C8FB1DCA8CE4001F38F2 /* pdhalf.c in Sources */,
 				C453800E1C3A4CCE00A51738 /* AKChowningReverb.swift in Sources */,
 				C4F8C8B41DCA8CE4001F38F2 /* basic.c in Sources */,
@@ -4732,6 +4780,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "~/AudioKit/AudioKit/Common/Nodes/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = io.audiokit.AudioKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -4760,6 +4809,7 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = "~/AudioKit/AudioKit/Common/Nodes/lib";
 				PRODUCT_BUNDLE_IDENTIFIER = io.audiokit.AudioKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

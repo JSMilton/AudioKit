@@ -127,4 +127,5 @@ FOUNDATION_EXPORT const unsigned char AudioKitVersionString[];
 #if !TARGET_OS_TV
 // Me
 #import "JSMSequencerAudioUnit.h"
+#import "AbletonLinkManager.h"
 #endif
