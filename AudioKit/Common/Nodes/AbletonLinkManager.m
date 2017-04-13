@@ -28,7 +28,8 @@
 - (void)createLinkWithTempo:(double)tempo
 {
     _linkRef = ABLLinkNew(tempo);
-    ABLLinkSetSessionTempoCallback(_linkRef, tempoCallback, (__bridge void *)(self));
+    ABLLinkSetSessionTempoCallback(_linkRef, tempoCallback, NULL);
+    ABLLinkSetIsEnabledCallback(_linkRef, isConnectedCallback, NULL);
 }
 
 - (void *)getLinkRef
@@ -45,6 +46,11 @@
     return ABLLinkGetTempo(timeRef);
 }
 
+- (BOOL)isLinkEnabled
+{
+    return ABLLinkIsEnabled(_linkRef);
+}
+
 - (ABLLinkSettingsViewController *)settingsViewController
 {
     return [ABLLinkSettingsViewController instance:_linkRef];
@@ -52,6 +58,14 @@
 
 static void tempoCallback(double tempo, void *context) {
     [[NSNotificationCenter defaultCenter] postNotificationName:AbletonLinkGlobalTempoDidChangeNotification object:nil];
+}
+
+static void isConnectedCallback(bool isConnected, void *context) {
+    if (isConnected) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:AbletonLinkEnabledNotification object:nil];
+    } else {
+        [[NSNotificationCenter defaultCenter] postNotificationName:AbletonLinkDisabledNotification object:nil];
+    }
 }
 
 @end

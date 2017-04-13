@@ -8,7 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-static NSString * const AbletonLinkGlobalTempoDidChangeNotification = @"";
+static NSString * const AbletonLinkGlobalTempoDidChangeNotification = @"AbletonLinkGlobalTempoDidChangeNotification";
+static NSString * const AbletonLinkEnabledNotification = @"AbletonLinkEnabledNotification";
+static NSString * const AbletonLinkDisabledNotification = @"AbletonLinkDisabledNotification";
 
 @interface AbletonLinkManager : NSObject
 
@@ -16,6 +18,7 @@ static NSString * const AbletonLinkGlobalTempoDidChangeNotification = @"";
 - (void*)getLinkRef;
 - (void)createLinkWithTempo:(double)tempo;
 - (double)getGlobalTempo;
+- (BOOL)isLinkEnabled;
 
 + (instancetype)shared;
 

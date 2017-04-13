@@ -11,12 +11,12 @@
 
 @interface JSMSequencerAudioUnit : AKAudioUnit
 @property (nonatomic) MIDIClientRef midiClient;
+@property (nonatomic) MIDIPortRef inputPort;
 @property (readonly) double beats;
 @property (nonatomic) double tempo;
 @property (nonatomic) double length;
 @property (nonatomic) double rate;
 
-- (void)createTrackWithEndpoint:(MIDIEndpointRef)endpoint;
 - (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex;
 - (void)removeNoteAtPosition:(double)position fromTrack:(int)trackIndex;
 - (void)updateVelocityAtPosition:(double)position toVelocity:(int)velocity onTrack:(int)trackIndex;

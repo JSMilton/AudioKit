@@ -50,7 +50,7 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
         return currentBeats().truncatingRemainder(dividingBy: length)
     }
     
-    public init(midiClient: MIDIClientRef) {
+    public init(midiClient: MIDIClientRef, inputPort: MIDIPortRef) {
         
         _Self.register()
         
@@ -61,12 +61,9 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
             self?.internalAU = avAudioUnit.auAudioUnit as? AKAudioUnitType
         }
         
-        internalAU?.doStartStuff()
         internalAU?.midiClient = midiClient
-    }
-    
-    public func createTrack(withEndpoint endpoint: MIDIEndpointRef) {
-        internalAU?.createTrack(withEndpoint: endpoint)
+        internalAU?.inputPort = inputPort
+        internalAU?.doStartStuff()
     }
     
     public func addNote(noteNumber: Int, with velocity: Int, at position: Double, to trackIndex: Int) {

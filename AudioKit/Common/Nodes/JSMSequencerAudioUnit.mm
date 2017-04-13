@@ -16,16 +16,11 @@
 {
     AKJSMSequencerDSPKernel _kernel;
     BufferedInputBus _inputBus;
-    int trackCount;
     TPCircularBuffer *circBuffer;
 }
 
 - (double)beats {
     return _kernel.beats;
-}
-
-- (void)setMidiClient:(MIDIClientRef)midiClient {
-    _kernel.setMIDIClientRef(midiClient);
 }
 
 - (void)setTempo:(double)tempo {
@@ -41,12 +36,6 @@
 - (void)setRate:(double)rate {
     _rate = rate;
     _kernel.setRate(rate);
-}
-
-- (void)createTrackWithEndpoint:(MIDIEndpointRef)endpoint
-{
-    _kernel.createTrack(trackCount, endpoint);
-    trackCount++;
 }
 
 - (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex
@@ -106,9 +95,9 @@
 
 - (void)doStartStuff
 {
-    trackCount = 0;
     circBuffer = &_kernel.circBuffer;
     _kernel.setABLinkRef((ABLLinkRef)[[AbletonLinkManager shared] getLinkRef]);
+    _kernel.setupMIDI(self.midiClient, self.inputPort);
 }
 
 standardKernelPassthroughs()

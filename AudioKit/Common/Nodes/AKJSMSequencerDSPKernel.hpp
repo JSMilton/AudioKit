@@ -54,8 +54,10 @@ public:
         TPCircularBufferInit(&circBuffer, 4096);
     }
     
-    void setMIDIClientRef(MIDIClientRef client) {
-        MIDIOutputPortCreate(client, CFSTR("Deep-808 Internal"), &outputPort);
+    void setupMIDI(MIDIClientRef client, MIDIPortRef inputPort) {
+        MIDISourceCreate(client, CFSTR(""), &outputSrc);
+        MIDIObjectSetIntegerProperty(outputSrc, kMIDIPropertyPrivate, 1);
+        MIDIPortConnectSource(inputPort, outputSrc, &inputPort);
     }
     
     void setABLinkRef(ABLLinkRef ref) {
@@ -63,17 +65,23 @@ public:
     }
     
     void start() {
+        if (linkRef != NULL) {
+            if (ABLLinkIsConnected(linkRef)) {
+                restarted = true;
+            }
+        }
         started = true;
     }
     
     void stop() {
+        restarted = false;
         started = false;
         firstTimestamp = 0;
         beats = 0;
     }
     
     void destroy() {
-        MIDIPortDispose(outputPort);
+        MIDIEndpointDispose(outputSrc);
     }
     
     void reset() {
@@ -89,10 +97,6 @@ public:
     
     void setRate(double r) {
         rate = r;
-    }
-    
-    void createTrack(int trackIndex, MIDIEndpointRef endpoint) {
-        tracks[trackIndex].endpointRef = endpoint;
     }
     
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
@@ -129,6 +133,13 @@ public:
         double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, tempo);
         beat = linkAdjustedBeat(beat, timestamp->mHostTime);
         
+        if (restarted) {
+            if (fabs(fmod(beat, length) - length) > 0.1) {
+                return;
+            }
+            restarted = false;
+        }
+        
         double relativeLength = length / rate;
         double frameSeconds = frameCount / 44100.0;
         double endBeat = beat + SESecondsToBeats(frameSeconds, tempo);
@@ -145,11 +156,11 @@ public:
                 pos += offset;
                 
                 if (pos >= beat && pos < endBeat) {
-                    playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
+                    playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp->mHostTime);
                 } else if (endOffset > offset) {
                     pos += relativeLength;
                     if (pos >= beat && pos < endBeat) {
-                        playMIDINote(tracks[i].notes[j].noteNumber, tracks[i].notes[j].velocity, tracks[i].endpointRef);
+                        playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp->mHostTime);
                     }
                 }
             }
@@ -209,11 +220,11 @@ private:
         tempoChanged = true;
     }
     
-    void playMIDINote(uint8_t note, uint8_t velocity, MIDIEndpointRef ref) {
+    void playMIDINote(uint8_t note, uint8_t velocity, uint64_t timestamp) {
         MIDIPacketList packetList;
         packetList.numPackets = 1;
         MIDIPacket* firstPacket = &packetList.packet[0];
-        firstPacket->timeStamp = 0;
+        firstPacket->timeStamp = timestamp;
         firstPacket->length = 3;
         firstPacket->data[0] = 0x90;
         firstPacket->data[1] = note;
@@ -222,14 +233,14 @@ private:
         MIDIPacketList packetList2;
         packetList2.numPackets = 1;
         MIDIPacket* firstPacket2 = &packetList2.packet[0];
-        firstPacket2->timeStamp = 1000000;
+        firstPacket2->timeStamp = timestamp + 1000000;
         firstPacket2->length = 3;
         firstPacket2->data[0] = 0x80;
         firstPacket2->data[1] = note;
         firstPacket2->data[2] = velocity;
         
-        MIDISend(outputPort, ref, &packetList);
-        MIDISend(outputPort, ref, &packetList2);
+        MIDIReceived(outputSrc, &packetList);
+        MIDIReceived(outputSrc, &packetList2);
     }
     
     void processBuffer() {
@@ -263,6 +274,7 @@ private:
     }
     
     double linkAdjustedBeat(double beat, uint64_t hostTime) {
+        if (linkRef == NULL)return beat;
         if (ABLLinkIsEnabled(linkRef)) {
             ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
             double linkBeat = ABLLinkBeatAtTime(timeLine, hostTime, length);
@@ -275,6 +287,7 @@ private:
     }
     
     void setLinkTempo(double tempo, uint64_t hostTime) {
+        if (linkRef == NULL)return;
         if (ABLLinkIsEnabled(linkRef)) {
             ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
             ABLLinkSetTempo(timeLine, tempo, hostTime);
@@ -291,13 +304,14 @@ public:
     TPCircularBuffer circBuffer;
     
 private:
-    MIDIPortRef outputPort;
+    MIDIEndpointRef outputSrc;
     Track tracks[16];
     uint64_t firstTimestamp = 0;
     bool tempoChanged = false;
     double tempo = 120.0;
     double rate = 1.0;
     ABLLinkRef linkRef;
+    bool restarted = false;
     
     int printThrottleCount = 0;
 };
