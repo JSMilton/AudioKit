@@ -43,8 +43,9 @@ extension AVAudioConnectionPoint {
     }
 
     deinit {
-        //AKLog("* AKNode")
-        AudioKit.engine.detach(self.avAudioNode)
+        if avAudioNode != nil {
+            AudioKit.engine.detach(self.avAudioNode)
+        }
     }
 }
 

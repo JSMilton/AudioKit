@@ -11,15 +11,21 @@
 open class AKCompressor: AKNode, AKToggleable, AUEffect {
     public static let ComponentDescription = AudioComponentDescription(appleEffect: kAudioUnitSubType_DynamicsProcessor)
 
-    private var au: AUWrapper
-
-    fileprivate var mixer: AKMixer
+    internal var internalEffect = AVAudioUnitEffect()
+    internal var internalAU: AudioUnit?
 
     /// Threshold (dB) ranges from -40 to 20 (Default: -20)
     open dynamic var threshold: Double = -20 {
         didSet {
             threshold = (-40...20).clamp(threshold)
-            au[kDynamicsProcessorParam_Threshold] = threshold
+            if let audioUnit = internalAU {
+                AudioUnitSetParameter(audioUnit,
+                                      kDynamicsProcessorParam_Threshold,
+                                      kAudioUnitScope_Global,
+                                      0,
+                                      Float(threshold),
+                                      0)
+            }
         }
     }
 
@@ -27,7 +33,14 @@ open class AKCompressor: AKNode, AKToggleable, AUEffect {
     open dynamic var headRoom: Double = 5 {
         didSet {
             headRoom = (0.1...40).clamp(headRoom)
-            au[kDynamicsProcessorParam_HeadRoom] = headRoom
+            if let audioUnit = internalAU {
+                AudioUnitSetParameter(audioUnit,
+                                      kDynamicsProcessorParam_HeadRoom,
+                                      kAudioUnitScope_Global,
+                                      0,
+                                      Float(headRoom),
+                                      0)
+            }
         }
     }
 
@@ -35,7 +48,14 @@ open class AKCompressor: AKNode, AKToggleable, AUEffect {
     open dynamic var attackTime: Double = 0.001 {
         didSet {
             attackTime = (0.000_1...0.2).clamp(attackTime)
-            au[kDynamicsProcessorParam_AttackTime] = attackTime
+            if let audioUnit = internalAU {
+                AudioUnitSetParameter(audioUnit,
+                                      kDynamicsProcessorParam_AttackTime,
+                                      kAudioUnitScope_Global,
+                                      0,
+                                      Float(attackTime),
+                                      0)
+            }
         }
     }
 
@@ -43,30 +63,44 @@ open class AKCompressor: AKNode, AKToggleable, AUEffect {
     open dynamic var releaseTime: Double = 0.05 {
         didSet {
             releaseTime = (0.01...3).clamp(releaseTime)
-            au[kDynamicsProcessorParam_ReleaseTime] = releaseTime
+            if let audioUnit = internalAU {
+                AudioUnitSetParameter(audioUnit,
+                                      kDynamicsProcessorParam_ReleaseTime,
+                                      kAudioUnitScope_Global,
+                                      0,
+                                      Float(releaseTime),
+                                      0)
+            }
         }
     }
 
     /// Compression Amount (dB) read only
     open dynamic var compressionAmount: Double {
-        return au[kDynamicsProcessorParam_CompressionAmount]
+        return 0// au[kDynamicsProcessorParam_CompressionAmount]
     }
 
     /// Input Amplitude (dB) read only
     open dynamic var inputAmplitude: Double {
-        return au[kDynamicsProcessorParam_InputAmplitude]
+        return 0// au[kDynamicsProcessorParam_InputAmplitude]
     }
 
     /// Output Amplitude (dB) read only
     open dynamic var outputAmplitude: Double {
-        return au[kDynamicsProcessorParam_OutputAmplitude]
+        return 0// au[kDynamicsProcessorParam_OutputAmplitude]
     }
 
     /// Master Gain (dB) ranges from -40 to 40 (Default: 0)
     open dynamic var masterGain: Double = 0 {
         didSet {
             masterGain = (-40...40).clamp(masterGain)
-            au[kDynamicsProcessorParam_MasterGain] = masterGain
+            if let audioUnit = internalAU {
+                AudioUnitSetParameter(audioUnit,
+                                      kDynamicsProcessorParam_MasterGain,
+                                      kAudioUnitScope_Global,
+                                      0,
+                                      Float(masterGain),
+                                      0)
+            }
         }
     }
 
@@ -103,35 +137,20 @@ open class AKCompressor: AKNode, AKToggleable, AUEffect {
         attackTime: Double = 0.001,
         releaseTime: Double = 0.05,
         masterGain: Double = 0) {
-
-            self.threshold = threshold
-            self.headRoom = headRoom
-            self.attackTime = attackTime
-            self.releaseTime = releaseTime
-            self.masterGain = masterGain
-
-            inputGain = AKMixer(input)
-            inputGain?.volume = 0
-            mixer = AKMixer(inputGain)
-
-            effectGain = AKMixer(input)
-            effectGain?.volume = 1
-
-            let effect = _Self.effect
-            AudioKit.engine.attach(effect)
-            au = AUWrapper(effect)
-            if let node = effectGain?.avAudioNode {
-                AudioKit.engine.connect(node, to: effect)
-            }
-            AudioKit.engine.connect(effect, to: mixer.avAudioNode)
-
-            super.init(avAudioNode: mixer.avAudioNode)
-
-            au[kDynamicsProcessorParam_Threshold] = threshold
-            au[kDynamicsProcessorParam_HeadRoom] = headRoom
-            au[kDynamicsProcessorParam_AttackTime] = attackTime
-            au[kDynamicsProcessorParam_ReleaseTime] = releaseTime
-            au[kDynamicsProcessorParam_MasterGain] = masterGain
+        
+        internalEffect = AVAudioUnitEffect(audioComponentDescription: AKCompressor.ComponentDescription)
+        
+        super.init()
+        self.avAudioNode = internalEffect
+        AudioKit.engine.attach(self.avAudioNode)
+        input?.addConnectionPoint(self)
+        internalAU = internalEffect.audioUnit
+        
+        self.threshold = threshold
+        self.headRoom = headRoom
+        self.attackTime = attackTime
+        self.releaseTime = releaseTime
+        self.masterGain = masterGain
     }
 
     /// Function to start, play, or activate the node, all do the same thing
