@@ -328,24 +328,24 @@ extension AVAudioEngine {
 
     // Restarts the engine after audio output has been changed, like headphones plugged in.
     @objc fileprivate static func restartEngineAfterRouteChange(_ notification: Notification) {
-        DispatchQueue.main.async {
-            if shouldBeRunning {
-                do {
-                    try self.engine.start()
-                    // Sends notification after restarting the engine, so it is safe to resume
-                    // AudioKit functions.
-                    if AKSettings.notificationsEnabled {
-                        NotificationCenter.default.post(
-                            name: .AKEngineRestartedAfterRouteChange,
-                            object: nil,
-                            userInfo: notification.userInfo)
-
-                    }
-                } catch {
-                    AKLog("error restarting engine after route change")
-                }
-            }
-        }
+//        DispatchQueue.main.async {
+//            if shouldBeRunning {
+//                do {
+//                    try self.engine.start()
+//                    // Sends notification after restarting the engine, so it is safe to resume
+//                    // AudioKit functions.
+//                    if AKSettings.notificationsEnabled {
+//                        NotificationCenter.default.post(
+//                            name: .AKEngineRestartedAfterRouteChange,
+//                            object: nil,
+//                            userInfo: notification.userInfo)
+//
+//                    }
+//                } catch {
+//                    AKLog("error restarting engine after route change")
+//                }
+//            }
+//        }
     }
 
     // MARK: - Deinitialization
