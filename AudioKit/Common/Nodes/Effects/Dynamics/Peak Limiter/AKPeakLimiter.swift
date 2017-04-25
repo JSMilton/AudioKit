@@ -13,7 +13,6 @@ open class AKPeakLimiter: AKNode, AKToggleable, AUEffect {
     public static let ComponentDescription = AudioComponentDescription(appleEffect: kAudioUnitSubType_PeakLimiter)
 
     private var au: AUWrapper
-    private var mixer: AKMixer
 
     /// Attack Time (Secs) ranges from 0.001 to 0.03 (Default: 0.012)
     open dynamic var attackTime: Double = 0.012 {
@@ -39,19 +38,6 @@ open class AKPeakLimiter: AKNode, AKToggleable, AUEffect {
         }
     }
 
-    /// Dry/Wet Mix (Default 100)
-    open dynamic var dryWetMix: Double = 100 {
-        didSet {
-            dryWetMix = (0...100).clamp(dryWetMix)
-            inputGain?.volume = 1 - dryWetMix / 100
-            effectGain?.volume = dryWetMix / 100
-        }
-    }
-
-    private var lastKnownMix: Double = 100
-    private var inputGain: AKMixer?
-    private var effectGain: AKMixer?
-
     /// Tells whether the node is processing (ie. started, playing, or active)
     open dynamic var isStarted = true
 
@@ -73,23 +59,11 @@ open class AKPeakLimiter: AKNode, AKToggleable, AUEffect {
             self.decayTime = decayTime
             self.preGain = preGain
 
-            inputGain = AKMixer(input)
-            inputGain?.volume = 0
-            mixer = AKMixer(inputGain)
-
-            effectGain = AKMixer(input)
-            effectGain?.volume = 1
-
             let effect = _Self.effect
             au = AUWrapper(effect)
 
-            super.init(avAudioNode: mixer.avAudioNode)
-            AudioKit.engine.attach(effect)
-
-            if let node = effectGain?.avAudioNode {
-                AudioKit.engine.connect(node, to: effect, format: AudioKit.format)
-            }
-            AudioKit.engine.connect(effect, to: mixer.avAudioNode, format: AudioKit.format)
+            super.init(avAudioNode: effect, attach: true)
+            input?.addConnectionPoint(self)
 
             au[kLimiterParam_AttackTime] = attackTime
             au[kLimiterParam_DecayTime] = decayTime
@@ -101,7 +75,6 @@ open class AKPeakLimiter: AKNode, AKToggleable, AUEffect {
     /// Function to start, play, or activate the node, all do the same thing
     open func start() {
         if isStopped {
-            dryWetMix = lastKnownMix
             isStarted = true
         }
     }
@@ -109,8 +82,6 @@ open class AKPeakLimiter: AKNode, AKToggleable, AUEffect {
     /// Function to stop or bypass the node, both are equivalent
     open func stop() {
         if isPlaying {
-            lastKnownMix = dryWetMix
-            dryWetMix = 0
             isStarted = false
         }
     }
