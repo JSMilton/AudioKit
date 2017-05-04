@@ -141,25 +141,25 @@ public:
         }
         
         double relativeLength = length / rate;
+        double relativeBeat = fmod(beat, relativeLength);
         double frameSeconds = frameCount / 44100.0;
-        double endBeat = beat + SESecondsToBeats(frameSeconds, tempo);
+        double frameBeats = SESecondsToBeats(frameSeconds, tempo);
+        double endBeat = relativeBeat + frameBeats;
         double endOffset = floor(endBeat / relativeLength) * relativeLength;
-        double offset = floor(beat / relativeLength) * relativeLength;
-        beats = endBeat;
+        double offset = floor(relativeBeat / relativeLength) * relativeLength;
+        beats = beat + frameBeats;
         
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
                 double pos = tracks[i].notes[j].position / rate;
                 
-                if (pos == -1) { continue; }
+                if (pos == -1 || pos >= relativeLength) { continue; }
                 
-                pos += offset;
-                
-                if (pos >= beat && pos < endBeat) {
+                if (pos >= relativeBeat && pos < endBeat) {
                     playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp->mHostTime);
                 } else if (endOffset > offset) {
-                    pos += relativeLength;
-                    if (pos >= beat && pos < endBeat) {
+                    double r = fmod(endBeat, relativeLength);
+                    if (pos >= 0 && pos < r) {
                         playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp->mHostTime);
                     }
                 }
