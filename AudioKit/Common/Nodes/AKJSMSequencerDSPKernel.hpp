@@ -230,17 +230,17 @@ private:
         firstPacket->data[1] = note;
         firstPacket->data[2] = velocity;
         
-        MIDIPacketList packetList2;
-        packetList2.numPackets = 1;
-        MIDIPacket* firstPacket2 = &packetList2.packet[0];
-        firstPacket2->timeStamp = timestamp + 1000000;
-        firstPacket2->length = 3;
-        firstPacket2->data[0] = 0x80;
-        firstPacket2->data[1] = note;
-        firstPacket2->data[2] = velocity;
+//        MIDIPacketList packetList2;
+//        packetList2.numPackets = 1;
+//        MIDIPacket* firstPacket2 = &packetList2.packet[0];
+//        firstPacket2->timeStamp = timestamp + 1000000;
+//        firstPacket2->length = 3;
+//        firstPacket2->data[0] = 0x80;
+//        firstPacket2->data[1] = note;
+//        firstPacket2->data[2] = velocity;
         
         MIDIReceived(outputSrc, &packetList);
-        MIDIReceived(outputSrc, &packetList2);
+        //MIDIReceived(outputSrc, &packetList2);
     }
     
     void processBuffer() {
