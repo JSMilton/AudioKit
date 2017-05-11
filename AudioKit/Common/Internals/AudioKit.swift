@@ -184,71 +184,8 @@ extension AVAudioEngine {
         // Start the engine.
         do {
             self.engine.prepare()
-
-            #if os(iOS)
-
-                NotificationCenter.default.addObserver(
-                    self,
-                    selector: #selector(AudioKit.restartEngineAfterRouteChange),
-                    name: .AVAudioSessionRouteChange,
-                    object: nil)
-            #endif
-            #if !os(macOS)
-                if AKSettings.audioInputEnabled {
-
-                #if os(iOS)
-                    if AKSettings.defaultToSpeaker {
-                        try AKSettings.setSession(category: .playAndRecord,
-                                                  with: .defaultToSpeaker)
-
-                        // listen to AVAudioEngineConfigurationChangeNotification
-                        // and restart the engine if it is stopped.
-                        NotificationCenter.default.addObserver(
-                            self,
-                            selector: #selector(AudioKit.audioEngineConfigurationChange),
-                            name: .AVAudioEngineConfigurationChange,
-                            object: engine)
-
-                    } else if AKSettings.useBluetooth {
-
-                        if #available(iOS 10.0, *) {
-                            let opts: AVAudioSessionCategoryOptions = [.allowBluetooth, .allowBluetoothA2DP, .mixWithOthers]
-                            try AKSettings.setSession(category: .playAndRecord, with: opts)
-                        } else {
-                            // Fallback on earlier versions
-                            try AKSettings.setSession(category: .playAndRecord, with: .mixWithOthers)
-                        }
-
-                    } else if !AKSettings.bluetoothOptions.isEmpty {
-                        let opts: AVAudioSessionCategoryOptions = [.mixWithOthers]
-                        try AKSettings.setSession(category: .playAndRecord,
-                                                  with: opts.union(AKSettings.bluetoothOptions))
-                    } else {
-                        try AKSettings.setSession(category: .playAndRecord, with: .mixWithOthers)
-                    }
-                #else
-                    // tvOS
-
-                    try AKSettings.setSession(category: .playAndRecord)
-
-                #endif
-
-                } else if AKSettings.playbackWhileMuted {
-
-                    try AKSettings.setSession(category: .playback)
-
-                } else {
-                    try AKSettings.setSession(category: .ambient)
-
-                }
-            #if os(iOS)
-                try AVAudioSession.sharedInstance().setActive(true)
-            #endif
-
-            #endif
-
+            try AVAudioSession.sharedInstance().setActive(true)
             try self.engine.start()
-
             shouldBeRunning = true
         } catch {
             fatalError("AudioKit: Could not start engine. error: \(error).")
@@ -308,44 +245,6 @@ extension AVAudioEngine {
         usleep(UInt32(duration * 1_000_000))
         stop()
         start()
-    }
-
-    // MARK: - Configuration Change Response
-
-    // Listen to changes in audio configuration
-    // and restart the audio engine if it stops and should be playing
-    @objc fileprivate static func audioEngineConfigurationChange(_ notification: Notification) {
-        DispatchQueue.main.async {
-            if shouldBeRunning && !engine.isRunning {
-                do {
-                    try engine.start()
-                } catch {
-                    AKLog("couldn't start engine after configuration change \(error)")
-                }
-            }
-        }
-    }
-
-    // Restarts the engine after audio output has been changed, like headphones plugged in.
-    @objc fileprivate static func restartEngineAfterRouteChange(_ notification: Notification) {
-//        DispatchQueue.main.async {
-//            if shouldBeRunning {
-//                do {
-//                    try self.engine.start()
-//                    // Sends notification after restarting the engine, so it is safe to resume
-//                    // AudioKit functions.
-//                    if AKSettings.notificationsEnabled {
-//                        NotificationCenter.default.post(
-//                            name: .AKEngineRestartedAfterRouteChange,
-//                            object: nil,
-//                            userInfo: notification.userInfo)
-//
-//                    }
-//                } catch {
-//                    AKLog("error restarting engine after route change")
-//                }
-//            }
-//        }
     }
 
     // MARK: - Deinitialization

@@ -43,9 +43,7 @@ extension AVAudioConnectionPoint {
     }
 
     deinit {
-        if self is AKMIDIInstrument == false {
-            AudioKit.engine.detach(self.avAudioNode)
-        }
+        AudioKit.engine.detach(self.avAudioNode)
     }
 }
 
