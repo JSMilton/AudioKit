@@ -131,7 +131,13 @@ public:
         }
 
         double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, tempo);
-        beat = linkAdjustedBeat(beat, timestamp->mHostTime);
+        double lBeat = linkAdjustedBeat(beat, timestamp->mHostTime);
+        
+        if (lBeat != beat) {
+            beat = lBeat;
+            uint64_t ticks = SEBeatsToHostTicks(beat, tempo);
+            //firstTimestamp = timestamp->mHostTime - ticks;
+        }
         
         if (restarted) {
             if (fabs(fmod(beat, length) - length) > 0.1) {
@@ -140,14 +146,29 @@ public:
             restarted = false;
         }
         
+        //double adjustedBeat = SEHostTicksToBeats(lastRenderTimestamp - firstTimestamp, tempo);
         double relativeLength = length / rate;
         double relativeBeat = fmod(beat, relativeLength);
         double frameSeconds = frameCount / 44100.0;
         double frameBeats = SESecondsToBeats(frameSeconds, tempo);
         double endBeat = relativeBeat + frameBeats;
-        double endOffset = floor(endBeat / relativeLength) * relativeLength;
-        double offset = floor(relativeBeat / relativeLength) * relativeLength;
+        
+        if (lastRenderTimestamp > 0) {
+            //playNotes(fmod(adjustedBeat, relativeLength), relativeBeat, timestamp->mHostTime);
+        }
+        
+        playNotes(relativeBeat, endBeat, timestamp->mHostTime);
+        
         beats = beat + frameBeats;
+        
+        lastRenderTimestamp = timestamp->mHostTime;
+    }
+    
+    void playNotes(double startBeat, double endBeat, uint64_t timestamp) {
+        
+        double relativeLength = length / rate;
+        double endOffset = floor(endBeat / relativeLength) * relativeLength;
+        double offset = floor(startBeat / relativeLength) * relativeLength;
         
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
@@ -155,12 +176,12 @@ public:
                 
                 if (pos == -1 || pos >= relativeLength) { continue; }
                 
-                if (pos >= relativeBeat && pos < endBeat) {
-                    playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp->mHostTime);
+                if (pos >= startBeat && pos < endBeat) {
+                    playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp);
                 } else if (endOffset > offset) {
                     double r = fmod(endBeat, relativeLength);
                     if (pos >= 0 && pos < r) {
-                        playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp->mHostTime);
+                        playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp);
                     }
                 }
             }
@@ -230,17 +251,7 @@ private:
         firstPacket->data[1] = note;
         firstPacket->data[2] = velocity;
         
-//        MIDIPacketList packetList2;
-//        packetList2.numPackets = 1;
-//        MIDIPacket* firstPacket2 = &packetList2.packet[0];
-//        firstPacket2->timeStamp = timestamp + 1000000;
-//        firstPacket2->length = 3;
-//        firstPacket2->data[0] = 0x80;
-//        firstPacket2->data[1] = note;
-//        firstPacket2->data[2] = velocity;
-        
         MIDIReceived(outputSrc, &packetList);
-        //MIDIReceived(outputSrc, &packetList2);
     }
     
     void processBuffer() {
@@ -277,8 +288,15 @@ private:
         if (linkRef == NULL)return beat;
         if (ABLLinkIsEnabled(linkRef)) {
             ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
-            double linkBeat = ABLLinkBeatAtTime(timeLine, hostTime, length);
-            if (fabs(linkBeat - beat) > 0.05) {
+            double linkBeat = fmod(ABLLinkBeatAtTime(timeLine, hostTime, length), length);
+            if (fabs(linkBeat - fmod(beat, length)) > 0.01) {
+                
+                printThrottleCount++;
+                //if (printThrottleCount == 10) {
+                    printf("linkbeat: %f, mybeat: %f\n", fmod( linkBeat, length ), fmod( beat, length ));
+                    printThrottleCount = 0;
+                //}
+                
                 return linkBeat;
             }
         }
@@ -295,6 +313,10 @@ private:
         }
     }
     
+    void resetFirstTimestamp() {
+        
+    }
+    
 public:
     bool started = false;
     bool resetted = false;
@@ -307,6 +329,7 @@ private:
     MIDIEndpointRef outputSrc;
     Track tracks[16];
     uint64_t firstTimestamp = 0;
+    uint64_t lastRenderTimestamp = 0;
     bool tempoChanged = false;
     double tempo = 120.0;
     double rate = 1.0;
