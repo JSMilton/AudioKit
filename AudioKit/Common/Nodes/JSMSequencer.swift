@@ -42,6 +42,18 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
         internalAU?.stop()
     }
     
+    public var measureLatency = false {
+        didSet {
+            internalAU?.measureLatency = measureLatency
+        }
+    }
+    
+    public var outputLatency = 0.0 {
+        didSet {
+            internalAU?.outputLatency = outputLatency
+        }
+    }
+    
     public func currentBeats() -> Double {
         return internalAU?.beats ?? 0
     }
@@ -88,5 +100,9 @@ open class JSMSequencer: AKNode, AKToggleable, AKComponent {
     
     public func setPosition(_ pos: Double) {
         internalAU?.setPosition(pos)
+    }
+    
+    public func registerSampler(_ sampler: JSMSampler) {
+        internalAU?.addSampler(sampler.getInternalAU())
     }
 }

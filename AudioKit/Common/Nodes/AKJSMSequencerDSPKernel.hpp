@@ -15,6 +15,7 @@
 #include "TPCircularBuffer.h"
 #include "SECommon.h"
 #include "ABLLink.h"
+#include "AKJSMSamplerDSPKernel.hpp"
 
 struct Note {
     uint8_t noteNumber;
@@ -78,6 +79,8 @@ public:
         started = false;
         firstTimestamp = 0;
         beats = 0;
+        timeToStart = 0;
+        lastRenderTimestamp = 0;
     }
     
     void destroy() {
@@ -97,6 +100,14 @@ public:
     
     void setRate(double r) {
         rate = r;
+    }
+    
+    void setMeasureLatency(bool measure) {
+        measuringLatency = measure;
+    }
+    
+    void setOutputLatency(double l) {
+        outputLatency = l;
     }
     
     void startRamp(AUParameterAddress address, AUValue value, AUAudioFrameCount duration) override {}
@@ -119,57 +130,71 @@ public:
         
         if (!started) { return; }
         
+        uint64_t latencyTicks = SESecondsToHostTicks(outputLatency);
+        uint64_t hostTime = timestamp->mHostTime + latencyTicks;
+        double frameSeconds = frameCount / 44100.0;
+        
+        ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
+        
         if (firstTimestamp == 0) {
             firstTimestamp = timestamp->mHostTime;
+            ABLLinkRequestBeatAtTime(timeLine, 0, hostTime, length);
         }
         
         if (tempoChanged) {
             tempoChanged = false;
-            uint64_t ticks = SEBeatsToHostTicks(beats, tempo);
-            firstTimestamp = timestamp->mHostTime - ticks;
-            setLinkTempo(tempo, timestamp->mHostTime);
-        }
-
-        double beat = SEHostTicksToBeats(timestamp->mHostTime - firstTimestamp, tempo);
-        double lBeat = linkAdjustedBeat(beat, timestamp->mHostTime);
-        
-        if (lBeat != beat) {
-            beat = lBeat;
-            uint64_t ticks = SEBeatsToHostTicks(beat, tempo);
-            //firstTimestamp = timestamp->mHostTime - ticks;
+            resetFirstTimestamp(beats, hostTime);
+            setLinkTempo(tempo, hostTime, timeLine);
         }
         
         if (restarted) {
-            if (fabs(fmod(beat, length) - length) > 0.1) {
-                return;
+            if (timeToStart == 0) {
+                timeToStart = 1;
+                beats = 0;
+                ABLLinkRequestBeatAtTime(timeLine, 0, hostTime, length);
+            } else {
+                uint64_t startt = ABLLinkTimeAtBeat(timeLine, 0, length);
+                if (startt >= lastRenderTimestamp && startt <= timestamp->mHostTime) {
+                    firstTimestamp = timestamp->mHostTime;
+                    restarted = false;
+                    timeToStart = 0;
+                }
             }
-            restarted = false;
+        } else {
+            double beat = SEHostTicksToBeats(hostTime - firstTimestamp, tempo);
+            if (beats == 0) {
+                beat = 0;
+            } else {
+                double lBeat = linkAdjustedBeat(beat, hostTime, timeLine);
+                if (lBeat != beat) {
+                    double missedBeats = beat;
+                    beat = lBeat;
+                    resetFirstTimestamp(beat, hostTime);
+                    if (missedBeats < beat) {
+                        playNotes(fmod(missedBeats, length), fmod(beat, length));
+                    }
+                }
+            }
+            
+            double relativeLength = length / rate;
+            double relativeBeat = fmod(beat, relativeLength);
+            double frameBeats = SESecondsToBeats(frameSeconds, tempo);
+            double endBeat = fmod(relativeBeat + frameBeats, length);
+            playNotes(relativeBeat, endBeat);
+            beats = beat + frameBeats;
         }
-        
-        //double adjustedBeat = SEHostTicksToBeats(lastRenderTimestamp - firstTimestamp, tempo);
-        double relativeLength = length / rate;
-        double relativeBeat = fmod(beat, relativeLength);
-        double frameSeconds = frameCount / 44100.0;
-        double frameBeats = SESecondsToBeats(frameSeconds, tempo);
-        double endBeat = relativeBeat + frameBeats;
-        
-        if (lastRenderTimestamp > 0) {
-            //playNotes(fmod(adjustedBeat, relativeLength), relativeBeat, timestamp->mHostTime);
-        }
-        
-        playNotes(relativeBeat, endBeat, timestamp->mHostTime);
-        
-        beats = beat + frameBeats;
         
         lastRenderTimestamp = timestamp->mHostTime;
+
+        if (measuringLatency) {
+            playMIDINote(0, 0, timestamp->mHostTime);
+        }
+        
+        ABLLinkCommitAudioTimeline(linkRef, timeLine);
     }
     
-    void playNotes(double startBeat, double endBeat, uint64_t timestamp) {
-        
+    void playNotes(double startBeat, double endBeat) {
         double relativeLength = length / rate;
-        double endOffset = floor(endBeat / relativeLength) * relativeLength;
-        double offset = floor(startBeat / relativeLength) * relativeLength;
-        
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
                 double pos = tracks[i].notes[j].position / rate;
@@ -177,15 +202,18 @@ public:
                 if (pos == -1 || pos >= relativeLength) { continue; }
                 
                 if (pos >= startBeat && pos < endBeat) {
-                    playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp);
-                } else if (endOffset > offset) {
-                    double r = fmod(endBeat, relativeLength);
-                    if (pos >= 0 && pos < r) {
-                        playMIDINote(i+36, tracks[i].notes[j].velocity, timestamp);
+                    playMIDINote(i+36, tracks[i].notes[j].velocity, 0);
+                } else if (endBeat < startBeat) {
+                    if (pos >= startBeat || pos < endBeat) {
+                        playMIDINote(i+36, tracks[i].notes[j].velocity, 0);
                     }
                 }
             }
         }
+    }
+    
+    void addSampler(AKJSMSamplerDSPKernel *samp) {
+        sampler = samp;
     }
     
 private:
@@ -284,19 +312,12 @@ private:
         TPCircularBufferConsume(&circBuffer, availableBytes);
     }
     
-    double linkAdjustedBeat(double beat, uint64_t hostTime) {
+    double linkAdjustedBeat(double beat, uint64_t hostTime, ABLLinkTimelineRef timeline) {
         if (linkRef == NULL)return beat;
         if (ABLLinkIsEnabled(linkRef)) {
-            ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
-            double linkBeat = fmod(ABLLinkBeatAtTime(timeLine, hostTime, length), length);
-            if (fabs(linkBeat - fmod(beat, length)) > 0.01) {
-                
-                printThrottleCount++;
-                //if (printThrottleCount == 10) {
-                    printf("linkbeat: %f, mybeat: %f\n", fmod( linkBeat, length ), fmod( beat, length ));
-                    printThrottleCount = 0;
-                //}
-                
+            double linkBeat = ABLLinkBeatAtTime(timeline, hostTime, length);
+            if (fabs(linkBeat - beat) > 0.01) {
+                printf("alteredBeast\n");
                 return linkBeat;
             }
         }
@@ -304,17 +325,16 @@ private:
         return beat;
     }
     
-    void setLinkTempo(double tempo, uint64_t hostTime) {
+    void setLinkTempo(double tempo, uint64_t hostTime, ABLLinkTimelineRef timeline) {
         if (linkRef == NULL)return;
         if (ABLLinkIsEnabled(linkRef)) {
-            ABLLinkTimelineRef timeLine = ABLLinkCaptureAudioTimeline(linkRef);
-            ABLLinkSetTempo(timeLine, tempo, hostTime);
-            ABLLinkCommitAudioTimeline(linkRef, timeLine);
+            ABLLinkSetTempo(timeline, tempo, hostTime);
         }
     }
     
-    void resetFirstTimestamp() {
-        
+    void resetFirstTimestamp(double beat, uint64_t hostTime) {
+        uint64_t ticks = SEBeatsToHostTicks(beat, tempo);
+        firstTimestamp = hostTime - ticks;
     }
     
 public:
@@ -335,6 +355,12 @@ private:
     double rate = 1.0;
     ABLLinkRef linkRef;
     bool restarted = false;
+    bool measuringLatency = false;
+    double outputLatency = 0;
     
     int printThrottleCount = 0;
+    
+    uint64_t timeToStart = 0;
+    
+    AKJSMSamplerDSPKernel *sampler;
 };

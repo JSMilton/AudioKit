@@ -9,6 +9,8 @@
 #import "AKAudioUnit.h"
 #import <CoreMIDI/CoreMIDI.h>
 
+@class JSMSamplerAudioUnit;
+
 @interface JSMSequencerAudioUnit : AKAudioUnit
 @property (nonatomic) MIDIClientRef midiClient;
 @property (nonatomic) MIDIPortRef inputPort;
@@ -16,6 +18,8 @@
 @property (nonatomic) double tempo;
 @property (nonatomic) double length;
 @property (nonatomic) double rate;
+@property (nonatomic) double outputLatency;
+@property (nonatomic) BOOL measureLatency;
 
 - (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex;
 - (void)removeNoteAtPosition:(double)position fromTrack:(int)trackIndex;
@@ -24,4 +28,5 @@
 - (void)clearSequence;
 - (void)setPosition:(double)position;
 - (void)doStartStuff;
+- (void)addSampler:(JSMSamplerAudioUnit *)sampler;
 @end

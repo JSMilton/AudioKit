@@ -11,6 +11,7 @@
 #import "BufferedAudioBus.hpp"
 #import <AudioKit/AudioKit-Swift.h>
 #import "AbletonLinkManager.h"
+#import "JSMSamplerAudioUnit.h"
 
 @implementation JSMSequencerAudioUnit
 {
@@ -36,6 +37,17 @@
 - (void)setRate:(double)rate {
     _rate = rate;
     _kernel.setRate(rate);
+}
+
+- (void)setMeasureLatency:(BOOL)measureLatency
+{
+    _measureLatency = measureLatency;
+    _kernel.setMeasureLatency(measureLatency);
+}
+
+- (void)setOutputLatency:(double)outputLatency {
+    _outputLatency = outputLatency;
+    _kernel.setOutputLatency(outputLatency);
 }
 
 - (void)addNote:(int)noteNumber withVelocity:(int)velocity atPosition:(double)position toTrack:(int)trackIndex
@@ -98,6 +110,11 @@
     circBuffer = &_kernel.circBuffer;
     _kernel.setABLinkRef((ABLLinkRef)[[AbletonLinkManager shared] getLinkRef]);
     _kernel.setupMIDI(self.midiClient, self.inputPort);
+}
+
+- (void)addSampler:(JSMSamplerAudioUnit *)sampler
+{
+    _kernel.addSampler((AKJSMSamplerDSPKernel*)sampler.getKernelPointer);
 }
 
 standardKernelPassthroughs()

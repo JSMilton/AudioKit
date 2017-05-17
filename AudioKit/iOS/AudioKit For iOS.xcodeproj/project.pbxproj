@@ -21,6 +21,10 @@
 		4FF3F9541E9D46E200DEDC31 /* SECommon.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FF3F9521E9D46E200DEDC31 /* SECommon.c */; };
 		5251477B1CC4AD7E00421C52 /* AKNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251477A1CC4AD7E00421C52 /* AKNotifications.swift */; };
 		55F29C091E90654C00A2151F /* AKScheduledAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F29C081E90654C00A2151F /* AKScheduledAction.swift */; };
+		59ABC4BB1ECA0DFA002F8C2F /* JSMSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59ABC4BA1ECA0DFA002F8C2F /* JSMSampler.swift */; };
+		59ABC4BE1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h in Headers */ = {isa = PBXBuildFile; fileRef = 59ABC4BC1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		59ABC4BF1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm in Sources */ = {isa = PBXBuildFile; fileRef = 59ABC4BD1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm */; };
+		59ABC4C21ECA1F4D002F8C2F /* AKJSMSamplerDSPKernel.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 59ABC4C01ECA0EE2002F8C2F /* AKJSMSamplerDSPKernel.hpp */; };
 		6520FFC21D361B030052410C /* resonantFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6520FFC11D361B030052410C /* resonantFilter.swift */; };
 		898DED261C6944430026FCC3 /* AKVariSpeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898DED251C6944430026FCC3 /* AKVariSpeed.swift */; };
 		8D0E46581D3827970000CCF8 /* AKAudioFile+ProcessingAsynchronously.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D0E46561D3827970000CCF8 /* AKAudioFile+ProcessingAsynchronously.swift */; };
@@ -849,6 +853,10 @@
 		4FF3F9521E9D46E200DEDC31 /* SECommon.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SECommon.c; sourceTree = "<group>"; };
 		5251477A1CC4AD7E00421C52 /* AKNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKNotifications.swift; sourceTree = "<group>"; };
 		55F29C081E90654C00A2151F /* AKScheduledAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKScheduledAction.swift; sourceTree = "<group>"; };
+		59ABC4BA1ECA0DFA002F8C2F /* JSMSampler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSMSampler.swift; sourceTree = "<group>"; };
+		59ABC4BC1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSMSamplerAudioUnit.h; sourceTree = "<group>"; };
+		59ABC4BD1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = JSMSamplerAudioUnit.mm; sourceTree = "<group>"; };
+		59ABC4C01ECA0EE2002F8C2F /* AKJSMSamplerDSPKernel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = AKJSMSamplerDSPKernel.hpp; sourceTree = "<group>"; };
 		6520FFC11D361B030052410C /* resonantFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = resonantFilter.swift; sourceTree = "<group>"; };
 		898DED251C6944430026FCC3 /* AKVariSpeed.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKVariSpeed.swift; sourceTree = "<group>"; };
 		8D0E46561D3827970000CCF8 /* AKAudioFile+ProcessingAsynchronously.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "AKAudioFile+ProcessingAsynchronously.swift"; sourceTree = "<group>"; };
@@ -1719,15 +1727,27 @@
 		4FE98A8F1E9A5FC500F70A68 /* Sequencer */ = {
 			isa = PBXGroup;
 			children = (
-				1A746BC51E9F96CD007C1D56 /* AbletonLink */,
+				59ABC4B91ECA0BA8002F8C2F /* Sampler */,
 				4FE98A901E9A604A00F70A68 /* JSMSequencer.swift */,
 				4FE98A921E9A618800F70A68 /* JSMSequencerAudioUnit.h */,
 				4FE98A931E9A618800F70A68 /* JSMSequencerAudioUnit.mm */,
 				4FE98A961E9A61EA00F70A68 /* AKJSMSequencerDSPKernel.hpp */,
 				4FF3F9511E9D46E200DEDC31 /* SECommon.h */,
 				4FF3F9521E9D46E200DEDC31 /* SECommon.c */,
+				1A746BC51E9F96CD007C1D56 /* AbletonLink */,
 			);
 			name = Sequencer;
+			sourceTree = "<group>";
+		};
+		59ABC4B91ECA0BA8002F8C2F /* Sampler */ = {
+			isa = PBXGroup;
+			children = (
+				59ABC4BA1ECA0DFA002F8C2F /* JSMSampler.swift */,
+				59ABC4BC1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h */,
+				59ABC4BD1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm */,
+				59ABC4C01ECA0EE2002F8C2F /* AKJSMSamplerDSPKernel.hpp */,
+			);
+			name = Sampler;
 			sourceTree = "<group>";
 		};
 		C40717301D21195000665C02 /* include */ = {
@@ -3824,6 +3844,7 @@
 				C407180C1D2119F600665C02 /* FileRead.h in Headers */,
 				C4537FD61C3A438D00A51738 /* AKLowShelfParametricEqualizerFilterAudioUnit.h in Headers */,
 				C42859051E90B6BC009B737D /* AKZitaReverbAudioUnit.h in Headers */,
+				59ABC4BE1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h in Headers */,
 				C48C6CBF1D3C15F1008EA51B /* soundpipe.h in Headers */,
 				C40718021D21199100665C02 /* DelayA.h in Headers */,
 				C468096E1CEECB6900ADFC05 /* AKPitchShifterAudioUnit.h in Headers */,
@@ -3942,6 +3963,7 @@
 				C40C42701C41B22A009D870B /* AKPluckedStringAudioUnit.h in Headers */,
 				C407181A1D211A5E00665C02 /* FileWvIn.h in Headers */,
 				C40C428D1C41C3D6009D870B /* AKDripAudioUnit.h in Headers */,
+				59ABC4C21ECA1F4D002F8C2F /* AKJSMSamplerDSPKernel.hpp in Headers */,
 				4FE98A941E9A618800F70A68 /* JSMSequencerAudioUnit.h in Headers */,
 				C4537FF71C3A438D00A51738 /* AKToneFilterAudioUnit.h in Headers */,
 				C45380531C3A5A4300A51738 /* AKOperationGeneratorAudioUnit.h in Headers */,
@@ -4226,6 +4248,7 @@
 				C46302831C20E7A7009B44D9 /* distort.swift in Sources */,
 				C4F8C8E81DCA8CE4001F38F2 /* loadfile.c in Sources */,
 				C4F8C8D21DCA8CE4001F38F2 /* fm.c in Sources */,
+				59ABC4BB1ECA0DFA002F8C2F /* JSMSampler.swift in Sources */,
 				C4F8C8C11DCA8CE4001F38F2 /* clip.c in Sources */,
 				C4537FE21C3A438D00A51738 /* AKPeakingParametricEqualizerFilter.swift in Sources */,
 				6520FFC21D361B030052410C /* resonantFilter.swift in Sources */,
@@ -4402,6 +4425,7 @@
 				C48C6C671D3C15F1008EA51B /* conv.c in Sources */,
 				C48C6C501D3C15F1008EA51B /* kiss_fftr.c in Sources */,
 				C48C6C871D3C15F1008EA51B /* noise.c in Sources */,
+				59ABC4BF1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm in Sources */,
 				C48C6CB21D3C15F1008EA51B /* thresh.c in Sources */,
 				C48C6C6D1D3C15F1008EA51B /* dmetro.c in Sources */,
 				C4F8C8BC1DCA8CE4001F38F2 /* butbp.c in Sources */,

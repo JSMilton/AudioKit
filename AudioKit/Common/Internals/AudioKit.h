@@ -128,4 +128,5 @@ FOUNDATION_EXPORT const unsigned char AudioKitVersionString[];
 // Me
 #import "JSMSequencerAudioUnit.h"
 #import "AbletonLinkManager.h"
+#import "JSMSamplerAudioUnit.h"
 #endif
