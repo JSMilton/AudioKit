@@ -316,8 +316,7 @@ private:
         if (linkRef == NULL)return beat;
         if (ABLLinkIsEnabled(linkRef)) {
             double linkBeat = ABLLinkBeatAtTime(timeline, hostTime, length);
-            if (fabs(linkBeat - beat) > 0.01) {
-                printf("alteredBeast\n");
+            if (fabs(linkBeat - beat) > 0.05) {
                 return linkBeat;
             }
         }
