@@ -96,11 +96,11 @@ public:
         }
         
         float *outLeft = (float *)outBufferListPtr->mBuffers[0].mData + bufferOffset;
-        vDSP_vsmul(leftIn, 1, &gain, outLeft, 1, frameCount);
+        vDSP_vmul(leftIn, 1, &ramp[0], 1, outLeft, 1, frameCount);
         
         if (channels > 1) {
             float *outRight = (float *)outBufferListPtr->mBuffers[1].mData + bufferOffset;
-            vDSP_vsmul(rightIn, 1, &gain, outRight, 1, frameCount);
+            vDSP_vmul(rightIn, 1, &ramp[0], 1, outRight, 1, frameCount);
         }
     }
 
