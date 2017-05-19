@@ -10,7 +10,7 @@
 
 #import "DSPKernel.hpp"
 #import "ParameterRamper.hpp"
-
+#import <Accelerate/Accelerate.h>
 #import <AudioKit/AudioKit-Swift.h>
 
 enum {
@@ -73,29 +73,34 @@ public:
             case gainAddress:
                 gainRamper.startRamp(clamp(value, -100000.0f, 100000.0f), duration);
                 break;
-
         }
     }
 
     void process(AUAudioFrameCount frameCount, AUAudioFrameCount bufferOffset) override {
-
-        for (int frameIndex = 0; frameIndex < frameCount; ++frameIndex) {
-
-            int frameOffset = int(frameIndex + bufferOffset);
-
-            gain = gainRamper.getAndStep();
-
-            if (!started) {
-                outBufferListPtr->mBuffers[0] = inBufferListPtr->mBuffers[0];
-                outBufferListPtr->mBuffers[1] = inBufferListPtr->mBuffers[1];
-                return;
-            }
-            
-            for (int channel = 0; channel < channels; ++channel) {
-                float *in  = (float *)inBufferListPtr->mBuffers[channel].mData  + frameOffset;
-                float *out = (float *)outBufferListPtr->mBuffers[channel].mData + frameOffset;
-                *out = *in * gain;
-            }
+        
+        float startGain = gainRamper.get();
+        gainRamper.stepBy(frameCount);
+        float endGain = gainRamper.get();
+        
+        vDSP_vgen(&startGain, &endGain, &ramp[0], 1, frameCount);
+        
+        float *leftIn = (float *)inBufferListPtr->mBuffers[0].mData + bufferOffset;
+        float *rightIn;
+        
+        gain = gainRamper.get();
+        
+        if (channels > 1) {
+            rightIn = (float *)inBufferListPtr->mBuffers[1].mData + bufferOffset;
+        } else {
+            rightIn = leftIn;
+        }
+        
+        float *outLeft = (float *)outBufferListPtr->mBuffers[0].mData + bufferOffset;
+        vDSP_vsmul(leftIn, 1, &gain, outLeft, 1, frameCount);
+        
+        if (channels > 1) {
+            float *outRight = (float *)outBufferListPtr->mBuffers[1].mData + bufferOffset;
+            vDSP_vsmul(rightIn, 1, &gain, outRight, 1, frameCount);
         }
     }
 
@@ -104,6 +109,7 @@ public:
 private:
 
     float gain = 1.0;
+    float ramp[1024];
 
 public:
     bool started = true;

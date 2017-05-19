@@ -21,6 +21,7 @@
 		4FF3F9541E9D46E200DEDC31 /* SECommon.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FF3F9521E9D46E200DEDC31 /* SECommon.c */; };
 		5251477B1CC4AD7E00421C52 /* AKNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5251477A1CC4AD7E00421C52 /* AKNotifications.swift */; };
 		55F29C091E90654C00A2151F /* AKScheduledAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F29C081E90654C00A2151F /* AKScheduledAction.swift */; };
+		590B05A31ECF4540008763D0 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 590B05A21ECF4540008763D0 /* Accelerate.framework */; };
 		59ABC4BB1ECA0DFA002F8C2F /* JSMSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59ABC4BA1ECA0DFA002F8C2F /* JSMSampler.swift */; };
 		59ABC4BE1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h in Headers */ = {isa = PBXBuildFile; fileRef = 59ABC4BC1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		59ABC4BF1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm in Sources */ = {isa = PBXBuildFile; fileRef = 59ABC4BD1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm */; };
@@ -853,6 +854,7 @@
 		4FF3F9521E9D46E200DEDC31 /* SECommon.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SECommon.c; sourceTree = "<group>"; };
 		5251477A1CC4AD7E00421C52 /* AKNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKNotifications.swift; sourceTree = "<group>"; };
 		55F29C081E90654C00A2151F /* AKScheduledAction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AKScheduledAction.swift; sourceTree = "<group>"; };
+		590B05A21ECF4540008763D0 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		59ABC4BA1ECA0DFA002F8C2F /* JSMSampler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSMSampler.swift; sourceTree = "<group>"; };
 		59ABC4BC1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSMSamplerAudioUnit.h; sourceTree = "<group>"; };
 		59ABC4BD1ECA0EBE002F8C2F /* JSMSamplerAudioUnit.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = JSMSamplerAudioUnit.mm; sourceTree = "<group>"; };
@@ -1688,6 +1690,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				590B05A31ECF4540008763D0 /* Accelerate.framework in Frameworks */,
 				1A746BCF1E9F96E5007C1D56 /* libABLLink.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1737,6 +1740,14 @@
 				1A746BC51E9F96CD007C1D56 /* AbletonLink */,
 			);
 			name = Sequencer;
+			sourceTree = "<group>";
+		};
+		590B05A11ECF453F008763D0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				590B05A21ECF4540008763D0 /* Accelerate.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		59ABC4B91ECA0BA8002F8C2F /* Sampler */ = {
@@ -2043,6 +2054,7 @@
 				C42F35021C057E03000E937C /* AudioKit */,
 				C446B3C31D45296A000AEFCA /* Playgrounds */,
 				C42F35011C057E03000E937C /* Products */,
+				590B05A11ECF453F008763D0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
