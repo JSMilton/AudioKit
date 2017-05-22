@@ -21,6 +21,7 @@ struct Note {
     uint8_t noteNumber;
     uint8_t velocity;
     double position = -1;
+    bool active = false;
 };
 
 struct Track {
@@ -179,7 +180,7 @@ public:
             double relativeLength = length / rate;
             double relativeBeat = fmod(beat, relativeLength);
             double frameBeats = SESecondsToBeats(frameSeconds, tempo);
-            double endBeat = fmod(relativeBeat + frameBeats, length);
+            double endBeat = fmod(beat + frameBeats, relativeLength);
             playNotes(relativeBeat, endBeat);
             beats = beat + frameBeats;
         }
@@ -199,7 +200,7 @@ public:
             for (int j = 0; j < 64; j++) {
                 double pos = tracks[i].notes[j].position / rate;
                 
-                if (pos == -1 || pos >= relativeLength) { continue; }
+                if (!tracks[i].notes[j].active || pos >= relativeLength) { continue; }
                 
                 if (pos >= startBeat && pos < endBeat) {
                     playMIDINote(i+36, tracks[i].notes[j].velocity, 0);
@@ -220,19 +221,21 @@ private:
     void addNote(Note note, int trackIndex) {
         int noteIndex = 0;
         for (int i = 0; i < 64; i++) {
-            if (tracks[trackIndex].notes[i].position == -1)  {
+            if (tracks[trackIndex].notes[i].active == false)  {
                 noteIndex = i;
                 break;
             }
         }
         
         tracks[trackIndex].notes[noteIndex] = note;
+        tracks[trackIndex].notes[noteIndex].active = true;
     }
     
     void removeNote(Note note, int trackIndex) {
         for (int i = 0; i < 64; i++) {
             if (tracks[trackIndex].notes[i].position == note.position)  {
                 tracks[trackIndex].notes[i].position = -1;
+                tracks[trackIndex].notes[i].active = false;
                 break;
             }
         }
@@ -260,6 +263,7 @@ private:
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 64; j++) {
                 tracks[i].notes[j].position = -1;
+                tracks[i].notes[j].active = false;
             }
         }
     }
