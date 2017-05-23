@@ -254,6 +254,7 @@ private:
         for (int i = 0; i < 64; i++) {
             if (tracks[trackIndex].notes[i].position == note.position)  {
                 tracks[trackIndex].notes[i] = note;
+                tracks[trackIndex].notes[i].active = true;
                 break;
             }
         }
